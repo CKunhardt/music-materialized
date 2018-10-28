@@ -1,7 +1,3 @@
-## Some Stuff
+# Basic Graphics Example
 
-http://redwoodaudio.net/Tutorials/juce_for_vst_development__intro.html
-
-https://juce.com/
-
-https://sdk.steinberg.net/
+This repository contains a basic example program making use of MinVR and the BasicGraphics library used in comp465 Interactive Computer Graphics at Macalester College
