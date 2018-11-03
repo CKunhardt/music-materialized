@@ -107,14 +107,38 @@ void GroovRenderer::renderOpenGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glm::vec3 eye_world = glm::vec3(0, 5, 10);
+	// Set up view matrix + eye position
+	glm::vec3 eye_world = glm::vec3(0.0, 5.0, 10.0);
 	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
-	glm::mat4 model = glm::mat4(1.0);
+	// Set up projection matrix
+	// glm::mat4 projection = glm::perspective(glm::radians(45.0f), getLocalBounds().toFloat().getAspectRatio(true), 0.01f, 100.0f);
 
-	Matrix3D<float> modelMatrix = g2jMat4(model);
+	// Set up model matrix from draggableOrientation + rotate it
+	Matrix3D<float> modelMatrix = draggableOrientation.getRotationMatrix();
+	//Matrix3D<float> modelMatrix = Matrix3D<float>();
+	auto rotationMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
+	modelMatrix = rotationMatrix * modelMatrix;
+	glm::mat4 model = j2gMat4(modelMatrix);
+
+	// Set up normal matrix
+	glm::mat3 normal_mat = glm::transpose(glm::inverse(model));
+
+	// Set up light position
+	glm::vec3 light_position = glm::vec3(-15.0f, 10.0f, 15.0f);
+
+	// Convert from GLM to Juce data types. We've already converted "model" by this point
 	Matrix3D<float> viewMatrix = g2jMat4(view);
+	Matrix3D<float> projectionMatrix = getProjectionMatrix();
 
+	// No native type for normal matrices, so just put into a float[9]. Can't really put this anywhere else or access violations :(
+	float normalMatrix[9];
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			int index = (i * 3) + j;
+			normalMatrix[index] = normal_mat[i][j];
+		}
+	}
 
 	shader->use();
 
@@ -122,10 +146,13 @@ void GroovRenderer::renderOpenGL()
 		uniforms->modelMatrix->setMatrix4(modelMatrix.mat, 1, false);
 
 	if (uniforms->projectionMatrix.get() != nullptr)
-		uniforms->projectionMatrix->setMatrix4(getProjectionMatrix().mat, 1, false);
+		uniforms->projectionMatrix->setMatrix4(projectionMatrix.mat, 1, false);
 
 	if (uniforms->viewMatrix.get() != nullptr)
-		uniforms->viewMatrix->setMatrix4(getViewMatrix().mat, 1, false);
+		uniforms->viewMatrix->setMatrix4(viewMatrix.mat, 1, false);
+
+	if (uniforms->normalMatrix.get() != nullptr)
+		uniforms->normalMatrix->setMatrix3(normalMatrix, 1, false);
 
 	if (uniforms->texture.get() != nullptr)
 		uniforms->texture->set((GLint)0);
@@ -134,7 +161,7 @@ void GroovRenderer::renderOpenGL()
 		uniforms->eyePosition->set(eye_world.x, eye_world.y, eye_world.z);
 
 	if (uniforms->lightPosition.get() != nullptr)
-		uniforms->lightPosition->set(-15.0f, 10.0f, 15.0f, 0.0f);
+		uniforms->lightPosition->set(light_position.x, light_position.y, light_position.z);
 
 	if (uniforms->bouncingNumber.get() != nullptr)
 		uniforms->bouncingNumber->set(bouncingNumber.getValue());

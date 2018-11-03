@@ -35,11 +35,9 @@ public:
 	void mouseWheelMove(const MouseEvent&, const MouseWheelDetails& d) override;
 	void mouseMagnify(const MouseEvent&, float magnifyAmount) override;
 
-	void selectPreset(int preset);
+	void loadShaders();
 
 	void selectTexture(int itemID);
-
-	void updateTexturesList();
 
 	void updateShader();
 
@@ -59,14 +57,6 @@ private:
 		zoomLabel{ {}, "Zoom: " };
 
 	CodeDocument vertexDocument, fragmentDocument;
-	CodeEditorComponent vertexEditorComp{ vertexDocument, nullptr },
-		fragmentEditorComp{ fragmentDocument, nullptr };
-
-	TabbedComponent tabbedComp{ TabbedButtonBar::TabsAtLeft };
-	ComboBox presetBox, textureBox;
-
-	Label presetLabel{ {}, "Shader Preset: " },
-		textureLabel{ {}, "Texture: " };
 
 	Slider speedSlider, sizeSlider;
 

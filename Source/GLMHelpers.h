@@ -21,7 +21,7 @@ static glm::mat4 j2gMat4(Matrix3D<float> mat)
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			int index = (i + 1)*(j + 1) - 1;
+			int index = (i*4)+j;
 			newMat[i][j] = mat.mat[index];
 		}
 	}
@@ -36,7 +36,7 @@ static Matrix3D<float> g2jMat4(glm::mat4 mat)
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			int index = (i + 1)*(j + 1) - 1;
+			int index = (i * 4) + j;
 			newMat.mat[index] = mat[i][j];
 		}
 	}
