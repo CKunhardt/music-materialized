@@ -11,6 +11,8 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include <glm.hpp>
+#include "GLMHelpers.h"
 #include "Mesh.h"
 
 //==============================================================================

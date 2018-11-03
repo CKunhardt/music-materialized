@@ -12,6 +12,8 @@
 #include "GroovRenderer.h"
 #include "GroovPlayer.h"
 
+#include <gtc/matrix_transform.hpp>
+
 //==============================================================================
 GroovRenderer::GroovRenderer()
 {
@@ -105,7 +107,19 @@ void GroovRenderer::renderOpenGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	glm::vec3 eye_world = glm::vec3(0, 5, 10);
+	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	glm::mat4 model = glm::mat4(1.0);
+
+	Matrix3D<float> modelMatrix = g2jMat4(model);
+	Matrix3D<float> viewMatrix = g2jMat4(view);
+
+
 	shader->use();
+
+	if (uniforms->modelMatrix.get() != nullptr)
+		uniforms->modelMatrix->setMatrix4(modelMatrix.mat, 1, false);
 
 	if (uniforms->projectionMatrix.get() != nullptr)
 		uniforms->projectionMatrix->setMatrix4(getProjectionMatrix().mat, 1, false);
@@ -115,6 +129,9 @@ void GroovRenderer::renderOpenGL()
 
 	if (uniforms->texture.get() != nullptr)
 		uniforms->texture->set((GLint)0);
+
+	if (uniforms->eyePosition.get() != nullptr)
+		uniforms->eyePosition->set(eye_world.x, eye_world.y, eye_world.z);
 
 	if (uniforms->lightPosition.get() != nullptr)
 		uniforms->lightPosition->set(-15.0f, 10.0f, 15.0f, 0.0f);

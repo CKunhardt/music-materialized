@@ -51,14 +51,14 @@ inline Colour getUIColourIfAvailable(LookAndFeel_V4::ColourScheme::UIColour uiCo
 inline File getProgramDirectory() noexcept
 {
 	auto currentFile = File::getSpecialLocation(File::SpecialLocationType::currentApplicationFile);
-	auto resDir = currentFile.getParentDirectory().getChildFile("final");
+	auto resDir = currentFile.getParentDirectory().getChildFile("music-materialized");
 
 	if (resDir.exists())
 		return resDir;
 
 	int numTries = 0; // keep track of the number of parent directories so we don't go on endlessly
 
-	while (currentFile.getFileName() != "final" && numTries++ < 15)
+	while (currentFile.getFileName() != "music-materialized" && numTries++ < 15)
 		currentFile = currentFile.getParentDirectory();
 
 	return currentFile;

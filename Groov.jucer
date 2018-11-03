@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="OmBYnl" name="Groov" projectType="guiapp" jucerVersion="5.3.2">
+<JUCERPROJECT id="OmBYnl" name="Groov" projectType="guiapp" jucerVersion="5.3.2"
+              headerPath="C:\Users\24als\OneDrive\Documents\repos\Comp465\C++\glm\glm">
   <MAINGROUP id="zw3XTC" name="Groov">
     <GROUP id="{8C0335DF-544F-66F7-8616-E200F694C68F}" name="Source">
       <GROUP id="{9C5A6D63-B64B-7905-117F-7C3EA5FB8798}" name="Helpers">
+        <FILE id="XXy8E6" name="GLMHelpers.h" compile="0" resource="0" file="Source/GLMHelpers.h"/>
         <FILE id="GcoGIj" name="Mesh.h" compile="0" resource="0" file="Source/Mesh.h"/>
         <FILE id="rN6gg2" name="Shaders.h" compile="0" resource="0" file="Source/Shaders.h"/>
         <FILE id="ox44KZ" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>

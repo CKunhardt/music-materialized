@@ -98,14 +98,16 @@ public:
 	{
 		Uniforms(OpenGLContext& openGLContext, OpenGLShaderProgram& shader)
 		{
+			modelMatrix.reset(createUniform(openGLContext, shader, "modelMatrix"));
 			projectionMatrix.reset(createUniform(openGLContext, shader, "projectionMatrix"));
 			viewMatrix.reset(createUniform(openGLContext, shader, "viewMatrix"));
-			texture.reset(createUniform(openGLContext, shader, "demoTexture"));
+			texture.reset(createUniform(openGLContext, shader, "textureSampler"));
+			eyePosition.reset(createUniform(openGLContext, shader, "eyePosition"));
 			lightPosition.reset(createUniform(openGLContext, shader, "lightPosition"));
 			bouncingNumber.reset(createUniform(openGLContext, shader, "bouncingNumber"));
 		}
 
-		std::unique_ptr<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, texture, lightPosition, bouncingNumber;
+		std::unique_ptr<OpenGLShaderProgram::Uniform> modelMatrix, projectionMatrix, viewMatrix, texture, eyePosition, lightPosition, bouncingNumber;
 
 	private:
 		static OpenGLShaderProgram::Uniform* createUniform(OpenGLContext& openGLContext,

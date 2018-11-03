@@ -20,6 +20,71 @@ struct ShaderPreset
 	const char* fragmentShader;
 };
 
+struct Shader
+{
+	const char* vertexShader;
+	const char* fragmentShader;
+};
+
+static Shader getShader()
+{
+	Shader shader =
+	{
+		"attribute vec4 position;\n"
+		"attribute vec4 normal;\n"
+		"attribute vec4 sourceColour;\n"
+		"attribute vec2 textureCoordIn;\n"
+		"\n"
+		"uniform mat4 modelMatrix;\n"
+		"uniform mat4 projectionMatrix;\n"
+		"uniform mat4 viewMatrix;\n"
+		"\n"
+		"varying vec4 destinationColour;\n"
+		"varying vec3 worldPos, worldNormal;\n"
+		"varying vec2 textureCoordOut;\n"
+		"varying float lightIntensity;\n"
+		"\n"
+		"void main()\n"
+		"{\n"
+		"    "
+		"    destinationColour = sourceColour;\n"
+		"    textureCoordOut = textureCoordIn;\n"
+		"    worldPos = vec3(modelMatrix * position);\n"
+		"\n"
+		"    mat4 normalMatrix = transpose(inverse(modelMatrix));\n"
+		"    worldNormal = normalize(normalMatrix * normal);\n"
+		"\n"
+		"    gl_Position = projectionMatrix * viewMatrix * worldPos;\n"
+		"}\n",
+
+	   #if JUCE_OPENGL_ES
+		"varying lowp vec4 worldPos, worldNormal;\n"
+		"varying lowp vec4 destinationColour;\n"
+		"varying lowp vec2 textureCoordOut;\n"
+	   #else
+		"varying vec4 worldPos, worldNormal;\n"
+		"varying vec4 destinationColour;\n"
+		"varying vec2 textureCoordOut;\n"
+	   #endif
+		"\n"
+		"uniform vec4 lightPosition;\n"
+		"uniform vec3 eyePosition;\n"
+		"uniform sampler2D textureSampler;\n"
+		"\n"
+		"void main()\n"
+		"{\n"
+	   #if JUCE_OPENGL_ES
+		"   highp float l = max (0.3, lightIntensity * 0.3);\n"
+		"   highp vec4 colour = vec4 (l, l, l, 1.0);\n"
+	   #else
+		"   float l = max (0.3, lightIntensity * 0.3);\n"
+		"   vec4 colour = vec4 (l, l, l, 1.0);\n"
+	   #endif
+		"    gl_FragColor = colour * texture2D (textureSampler, textureCoordOut);\n"
+		"}\n"
+	};
+}
+
 static Array<ShaderPreset> getPresets()
 {
 #define SHADER_DEMO_HEADER \
