@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="OmBYnl" name="Groov" projectType="guiapp" jucerVersion="5.3.2">
+  <MAINGROUP id="zw3XTC" name="Groov">
+    <GROUP id="{8C0335DF-544F-66F7-8616-E200F694C68F}" name="Source">
+      <GROUP id="{9C5A6D63-B64B-7905-117F-7C3EA5FB8798}" name="Helpers">
+        <FILE id="GcoGIj" name="Mesh.h" compile="0" resource="0" file="Source/Mesh.h"/>
+        <FILE id="rN6gg2" name="Shaders.h" compile="0" resource="0" file="Source/Shaders.h"/>
+        <FILE id="ox44KZ" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
+        <FILE id="LHFZWZ" name="WavefrontObjParser.h" compile="0" resource="0"
+              file="Source/WavefrontObjParser.h"/>
+      </GROUP>
+      <FILE id="uynXkk" name="GroovPlayer.cpp" compile="1" resource="0" file="Source/GroovPlayer.cpp"/>
+      <FILE id="qIHurP" name="GroovPlayer.h" compile="0" resource="0" file="Source/GroovPlayer.h"/>
+      <FILE id="vgAt76" name="GroovRenderer.cpp" compile="1" resource="0"
+            file="Source/GroovRenderer.cpp"/>
+      <FILE id="LjQvnP" name="GroovRenderer.h" compile="0" resource="0" file="Source/GroovRenderer.h"/>
+      <FILE id="wGdi85" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2017 targetFolder="Builds/VisualStudio2017">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2017>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <WINDOWS/>
+  </LIVE_SETTINGS>
+  <JUCEOPTIONS JUCE_USE_MP3AUDIOFORMAT="1"/>
+</JUCERPROJECT>
