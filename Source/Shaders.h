@@ -30,7 +30,7 @@ static Shader getShader()
 {
 	Shader shader =
 	{
-		"#version 440\n"
+		"#version 420\n"
 		"\n"
 		"attribute vec4 position;\n"
 		"attribute vec4 normal;\n"
@@ -55,7 +55,7 @@ static Shader getShader()
 		"    gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);\n"
 		"}\n",
 
-		"#version 440\n"
+		"#version 420\n"
 		"\n"
 	   #if JUCE_OPENGL_ES
 		"varying lowp vec3 worldPos, worldNormal;\n"

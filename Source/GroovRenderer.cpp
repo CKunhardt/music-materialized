@@ -82,10 +82,6 @@ void GroovRenderer::renderOpenGL()
 		if (!textureToUse->applyTo(texture))
 			textureToUse = nullptr;
 
-	// First draw our background graphics to demonstrate the OpenGLGraphicsContext class
-	if (doBackgroundDrawing)
-		drawBackground2DStuff(desktopScale);
-
 	updateShader();   // Check whether we need to compile a new shader
 
 	if (shader.get() == nullptr)
@@ -112,13 +108,33 @@ void GroovRenderer::renderOpenGL()
 	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	// Set up projection matrix
-	// glm::mat4 projection = glm::perspective(glm::radians(45.0f), getLocalBounds().toFloat().getAspectRatio(true), 0.01f, 100.0f);
+	Matrix3D<float> projectionMatrix = getProjectionMatrix();
 
-	// Set up model matrix from draggableOrientation + rotate it
-	Matrix3D<float> modelMatrix = draggableOrientation.getRotationMatrix();
-	//Matrix3D<float> modelMatrix = Matrix3D<float>();
-	auto rotationMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
-	modelMatrix = rotationMatrix * modelMatrix;
+	// Set up an identity model matrix
+	glm::mat4 gModelMatrix = glm::mat4(1.0);
+
+	// Scale it so it bounces every frame
+	if (doScaleBounce) {
+		scaleLooper = (scaleLooper > glm::pi<double>()) ? 0.0 : scaleLooper + (glm::pi<double>() / 180.0);
+		loopingScale = (float)abs(cos(scaleLooper));
+		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
+	}
+	else {
+		loopingScale = (float)abs(cos(scaleLooper));
+		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
+	}
+
+	// Convert from GLM to Juce's limited Matrix format
+	Matrix3D<float> modelMatrix = g2jMat4(gModelMatrix);
+	
+	// Get rotation values from draggableOrientation + rotate it more every frame
+	Matrix3D<float> rotationMatrix = draggableOrientation.getRotationMatrix();
+	auto rotationFrameMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
+
+	// Combine rotations
+	modelMatrix = rotationFrameMatrix * rotationMatrix * modelMatrix;
+
+	// Convert to GLM matrix so we can set up normal matrix
 	glm::mat4 model = j2gMat4(modelMatrix);
 
 	// Set up normal matrix
@@ -129,7 +145,6 @@ void GroovRenderer::renderOpenGL()
 
 	// Convert from GLM to Juce data types. We've already converted "model" by this point
 	Matrix3D<float> viewMatrix = g2jMat4(view);
-	Matrix3D<float> projectionMatrix = getProjectionMatrix();
 
 	// No native type for normal matrices, so just put into a float[9]. Can't really put this anywhere else or access violations :(
 	float normalMatrix[9];
@@ -221,42 +236,6 @@ void GroovRenderer::handleAsyncUpdate()
 	controlsOverlay->statusLabel.setText(statusText, dontSendNotification);
 }
 
-void GroovRenderer::drawBackground2DStuff(float desktopScale)
-{
-	// Create an OpenGLGraphicsContext that will draw into this GL window..
-	std::unique_ptr<LowLevelGraphicsContext> glRenderer(createOpenGLGraphicsContext(openGLContext,
-		roundToInt(desktopScale * getWidth()),
-		roundToInt(desktopScale * getHeight())));
-
-	if (glRenderer.get() != nullptr)
-	{
-		Graphics g(*glRenderer);
-		g.addTransform(AffineTransform::scale(desktopScale));
-
-		for (auto s : stars)
-		{
-			auto size = 0.25f;
-
-			// This stuff just creates a spinning star shape and fills it..
-			Path p;
-			p.addStar({ getWidth()  * s.x.getValue(),
-						 getHeight() * s.y.getValue() },
-				7,
-				getHeight() * size * 0.5f,
-				getHeight() * size,
-				s.angle.getValue());
-
-			auto hue = s.hue.getValue();
-
-			g.setGradientFill(ColourGradient(Colours::green.withRotatedHue(hue).withAlpha(0.8f),
-				0, 0,
-				Colours::red.withRotatedHue(hue).withAlpha(0.5f),
-				0, (float)getHeight(), false));
-			g.fillPath(p);
-		}
-	}
-}
-
 void GroovRenderer::updateShader()
 {
 	if (newVertexShader.isNotEmpty() || newFragmentShader.isNotEmpty())
@@ -274,7 +253,7 @@ void GroovRenderer::updateShader()
 			shader.reset(newShader.release());
 			shader->use();
 
-			shape.reset(new Mesh::Shape(openGLContext));
+			shape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
 			attributes.reset(new Mesh::Attributes(openGLContext, *shader));
 			uniforms.reset(new Mesh::Uniforms(openGLContext, *shader));
 

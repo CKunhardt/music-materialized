@@ -48,20 +48,20 @@ public:
     void resized() override;
 
 	Draggable3DOrientation draggableOrientation;
-	bool doBackgroundDrawing = false;
+	bool doScaleBounce = false;
 	float scale = 0.5f, rotationSpeed = 0.0f;
 	BouncingNumber bouncingNumber;
 
 private:
 	void handleAsyncUpdate() override;
 
-	void drawBackground2DStuff(float desktopScale);
-
 	OpenGLContext openGLContext;
 
 	std::unique_ptr<GroovPlayer> controlsOverlay;
 
 	float rotation = 0.0f;
+	float loopingScale = 0.0f;
+	double scaleLooper = 0.0;
 
 	std::unique_ptr<OpenGLShaderProgram> shader;
 	std::unique_ptr<Mesh::Shape> shape;
@@ -78,8 +78,6 @@ private:
 	{
 		SlowerBouncingNumber x, y, hue, angle;
 	};
-
-	BackgroundStar stars[3];
 
 	//==============================================================================
 	void updateShader();

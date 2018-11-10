@@ -39,11 +39,8 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 	addAndMakeVisible(speedLabel);
 	speedLabel.attachToComponent(&speedSlider, true);
 
-	addAndMakeVisible(showBackgroundToggle);
-	showBackgroundToggle.onClick = [this] { renderer.doBackgroundDrawing = showBackgroundToggle.getToggleState(); };
-
-	vertexDocument.addListener(this);
-	fragmentDocument.addListener(this);
+	addAndMakeVisible(enableScaleBounce);
+	enableScaleBounce.onClick = [this] {renderer.doScaleBounce = enableScaleBounce.getToggleState(); };
 
 	textures.add(new Mesh::TextureFromAsset("tile_background.png"));
 
@@ -53,7 +50,6 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 
 void GroovPlayer::initialize()
 {
-	showBackgroundToggle.setToggleState(false, sendNotification);
 	speedSlider.setValue(0.01);
 	sizeSlider.setValue(0.5);
 
@@ -73,7 +69,7 @@ void GroovPlayer::resized()
 	auto top = area.removeFromTop(75);
 
 	auto sliders = top.removeFromRight(area.getWidth() / 2);
-	showBackgroundToggle.setBounds(sliders.removeFromBottom(25));
+	enableScaleBounce.setBounds(sliders.removeFromBottom(25));
 	speedSlider.setBounds(sliders.removeFromBottom(25));
 	sizeSlider.setBounds(sliders.removeFromBottom(25));
 
@@ -124,18 +120,8 @@ void GroovPlayer::updateShader()
 
 void GroovPlayer::sliderValueChanged(Slider*)
 {
-	renderer.scale = (float)sizeSlider.getValue();
+	renderer.scale =  (float)sizeSlider.getValue() * 3  + 1;
 	renderer.rotationSpeed = (float)speedSlider.getValue();
-}
-
-void GroovPlayer::codeDocumentTextInserted(const String& /*newText*/, int /*insertIndex*/)
-{
-	startTimer(shaderLinkDelay);
-}
-
-void GroovPlayer::codeDocumentTextDeleted(int /*startIndex*/, int /*endIndex*/)
-{
-	startTimer(shaderLinkDelay);
 }
 
 void GroovPlayer::timerCallback()

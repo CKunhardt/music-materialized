@@ -128,9 +128,9 @@ public:
 	*/
 	struct Shape
 	{
-		Shape(OpenGLContext& openGLContext)
+		Shape(OpenGLContext& openGLContext, String name)
 		{
-			if (shapeFile.load(loadEntireAssetIntoString("teapot.obj")).wasOk())
+			if (shapeFile.load(loadEntireAssetIntoString(name.toStdString().c_str())).wasOk())
 				for (auto* s : shapeFile.shapes)
 					vertexBuffers.add(new VertexBuffer(openGLContext, *s));
 		}

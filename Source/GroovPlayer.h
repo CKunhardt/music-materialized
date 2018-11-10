@@ -20,7 +20,6 @@
 class GroovRenderer;
 
 class GroovPlayer    :  public Component,
-						private CodeDocument::Listener,
 						private Slider::Listener,
 						private Timer
 {
@@ -46,8 +45,6 @@ public:
 private:
 	void sliderValueChanged(Slider*) override;
 	enum { shaderLinkDelay = 500 };
-	void codeDocumentTextInserted(const String& /*newText*/, int /*insertIndex*/) override;
-	void codeDocumentTextDeleted(int /*startIndex*/, int /*endIndex*/) override;
 	void timerCallback() override;
 	void lookAndFeelChanged() override;
 
@@ -60,7 +57,7 @@ private:
 
 	Slider speedSlider, sizeSlider;
 
-	ToggleButton showBackgroundToggle{ "Draw 2D graphics in background" };
+	ToggleButton enableScaleBounce{ "Enable Bouncing: " };
 
 	OwnedArray<Mesh::Texture> textures;
 
