@@ -51,11 +51,12 @@ private:
 	GroovRenderer& renderer;
 
 	Label speedLabel{ {}, "Speed: " },
-		zoomLabel{ {}, "Zoom: " };
+		zoomLabel{ {}, "Zoom: " },
+		bpmLabel{ {}, "BPM: " };
 
 	CodeDocument vertexDocument, fragmentDocument;
 
-	Slider speedSlider, sizeSlider;
+	Slider speedSlider, sizeSlider, bpmSlider;
 
 	ToggleButton enableScaleBounce{ "Enable Bouncing: " };
 

@@ -25,7 +25,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 	statusLabel.setFont(Font(14.0f));
 
 	addAndMakeVisible(sizeSlider);
-	sizeSlider.setRange(0.0, 1.0, 0.001);
+	sizeSlider.setRange(1.0, 4.0, 0.01);
 	sizeSlider.addListener(this);
 
 	addAndMakeVisible(zoomLabel);
@@ -42,6 +42,13 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 	addAndMakeVisible(enableScaleBounce);
 	enableScaleBounce.onClick = [this] {renderer.doScaleBounce = enableScaleBounce.getToggleState(); };
 
+	addAndMakeVisible(bpmSlider);
+	bpmSlider.setRange(60, 180, 1);
+	bpmSlider.addListener(this);
+
+	addAndMakeVisible(bpmLabel);
+	bpmLabel.attachToComponent(&bpmSlider, true);
+
 	textures.add(new Mesh::TextureFromAsset("tile_background.png"));
 
 	lookAndFeelChanged();
@@ -51,7 +58,8 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 void GroovPlayer::initialize()
 {
 	speedSlider.setValue(0.01);
-	sizeSlider.setValue(0.5);
+	sizeSlider.setValue(2.5);
+	bpmSlider.setValue(120);
 
 	selectTexture(1);
 	loadShaders();
@@ -66,10 +74,11 @@ void GroovPlayer::resized()
 
 	auto area = getLocalBounds().reduced(4);
 
-	auto top = area.removeFromTop(75);
+	auto top = area.removeFromTop(100);
 
 	auto sliders = top.removeFromRight(area.getWidth() / 2);
 	enableScaleBounce.setBounds(sliders.removeFromBottom(25));
+	bpmSlider.setBounds(sliders.removeFromBottom(25));
 	speedSlider.setBounds(sliders.removeFromBottom(25));
 	sizeSlider.setBounds(sliders.removeFromBottom(25));
 
@@ -120,8 +129,9 @@ void GroovPlayer::updateShader()
 
 void GroovPlayer::sliderValueChanged(Slider*)
 {
-	renderer.scale =  (float)sizeSlider.getValue() * 3  + 1;
+	renderer.scale =  (float)sizeSlider.getValue();
 	renderer.rotationSpeed = (float)speedSlider.getValue();
+	renderer.bpm = (int)bpmSlider.getValue();
 }
 
 void GroovPlayer::timerCallback()

@@ -12,6 +12,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <glm.hpp>
+#include <chrono>
 #include "GLMHelpers.h"
 #include "Mesh.h"
 
@@ -50,6 +51,7 @@ public:
 	Draggable3DOrientation draggableOrientation;
 	bool doScaleBounce = false;
 	float scale = 0.5f, rotationSpeed = 0.0f;
+	int bpm = 120;
 	BouncingNumber bouncingNumber;
 
 private:
@@ -67,6 +69,9 @@ private:
 	std::unique_ptr<Mesh::Shape> shape;
 	std::unique_ptr<Mesh::Attributes> attributes;
 	std::unique_ptr<Mesh::Uniforms> uniforms;
+
+	std::chrono::time_point<std::chrono::system_clock> _lastTime;
+	std::chrono::time_point<std::chrono::system_clock> _curTime;
 
 	OpenGLTexture texture;
 	Mesh::Texture* textureToUse = nullptr;

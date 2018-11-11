@@ -32,6 +32,9 @@ GroovRenderer::GroovRenderer()
 
 	controlsOverlay->initialize();
 
+	_lastTime = std::chrono::system_clock::now();
+	_curTime = std::chrono::system_clock::now();
+
 	setSize(500, 500);
 }
 
@@ -72,6 +75,11 @@ void GroovRenderer::freeAllContextObjects()
 void GroovRenderer::renderOpenGL()
 {
 	jassert(OpenGLHelpers::isContextActive());
+
+	_lastTime = _curTime;
+	_curTime = std::chrono::system_clock::now();
+	std::chrono::duration<double> diff = _curTime - _lastTime;
+	double rdt = diff.count();
 
 	auto desktopScale = (float)openGLContext.getRenderingScale();
 
@@ -115,7 +123,7 @@ void GroovRenderer::renderOpenGL()
 
 	// Scale it so it bounces every frame
 	if (doScaleBounce) {
-		scaleLooper = (scaleLooper > glm::pi<double>()) ? 0.0 : scaleLooper + (glm::pi<double>() / 180.0);
+		scaleLooper = (scaleLooper > glm::pi<double>()) ? 0.0 : scaleLooper + (glm::pi<double>() * (bpm/60.0) * rdt);
 		loopingScale = (float)abs(cos(scaleLooper));
 		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
 	}
