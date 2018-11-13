@@ -58,7 +58,7 @@ private:
 
 	Slider speedSlider, sizeSlider, bpmSlider;
 
-	ToggleButton enableScaleBounce{ "Enable Bouncing: " };
+	ToggleButton enableScaleBounce{ "Enable Bouncing" };
 
 	OwnedArray<Mesh::Texture> textures;
 

@@ -264,12 +264,6 @@ void GroovRenderer::updateShader()
 			shape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
 			attributes.reset(new Mesh::Attributes(openGLContext, *shader));
 			uniforms.reset(new Mesh::Uniforms(openGLContext, *shader));
-
-			statusText = "GLSL: v" + String(OpenGLShaderProgram::getLanguageVersion(), 2);
-		}
-		else
-		{
-			statusText = newShader->getLastError();
 		}
 
 		triggerAsyncUpdate();
