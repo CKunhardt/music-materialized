@@ -94,7 +94,7 @@ static Shader getShader()
 	   #else
 		"   vec4 color = texture2D (textureSampler, textureCoordOut);\n"
 		"\n"
-		"   vec3 ambient = 0.2 * color.rgb;\n"
+		"   vec3 ambient = 0.3 * color.rgb;\n"
 		"\n"
 		"   vec3 lightDir = normalize(lightPosition - worldPos);\n"
 		"   vec3 normal = normalize(worldNormal);\n"
@@ -106,9 +106,9 @@ static Shader getShader()
 		"   float spec = 0.0;\n"
 		"\n"
 		"   vec3 halfwayDir = normalize(lightDir + viewDir);\n"
-		"   spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);\n"
+		"   spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);\n"
 		"\n"
-		"   vec3 specular = vec3(0.8) * spec;\n"
+		"   vec3 specular = vec3(0.7) * spec;\n"
 	   #endif
 		"    gl_FragColor = vec4(ambient + diffuse + specular, color.a);\n"
 		"}\n"

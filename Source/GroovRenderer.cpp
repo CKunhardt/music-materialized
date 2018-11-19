@@ -121,6 +121,8 @@ void GroovRenderer::renderOpenGL()
 	// Set up an identity model matrix
 	glm::mat4 gModelMatrix = glm::mat4(1.0);
 
+	//gModelMatrix = glm::scale(gModelMatrix, glm::vec3(0.3f));
+
 	// Scale it so it bounces every frame
 	if (doScaleBounce) {
 		scaleLooper = (scaleLooper > glm::pi<double>()) ? 0.0 : scaleLooper + (glm::pi<double>() * (bpm/60.0) * rdt);
@@ -149,7 +151,7 @@ void GroovRenderer::renderOpenGL()
 	glm::mat3 normal_mat = glm::transpose(glm::inverse(model));
 
 	// Set up light position
-	glm::vec3 light_position = glm::vec3(-15.0f, 10.0f, 15.0f);
+	glm::vec3 light_position = glm::vec3(-3.0f, 3.0f, 3.0f);
 
 	// Convert from GLM to Juce data types. We've already converted "model" by this point
 	Matrix3D<float> viewMatrix = g2jMat4(view);
