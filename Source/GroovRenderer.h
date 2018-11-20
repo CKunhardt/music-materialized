@@ -39,7 +39,6 @@ public:
 	void renderOpenGL() override;
 
 	Matrix3D<float> getProjectionMatrix() const;
-	Matrix3D<float> getViewMatrix() const;
 
 	void setTexture(Mesh::Texture* t);
 	void setShaderProgram(const String& vertexShader, const String& fragmentShader);
@@ -51,6 +50,8 @@ public:
 	Draggable3DOrientation draggableOrientation;
 	bool doScaleBounce = false;
 	float scale = 0.5f, rotationSpeed = 0.0f;
+
+	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
 	BouncingNumber bouncingNumber;
 
@@ -62,18 +63,30 @@ private:
 	std::unique_ptr<GroovPlayer> controlsOverlay;
 
 	float rotation = 0.0f;
-	float loopingScale = 0.0f;
+	float loopingScale = 1.0f;
 	double scaleLooper = 0.0;
 	double rotLooper = 0.0;
 	double bounceDistance = 1.0;
+
+	// Beat delay variables to account for frame sync
+	bool shouldDelay = false;
+	double beatDelay = 0.0;
+	double delayAccumulator = 0.0;
+
+	// If we change this, we have to change the initial value of bpm in public.
+	int initialBPM = 120;
 
 	std::unique_ptr<OpenGLShaderProgram> shader;
 	std::unique_ptr<Mesh::Shape> shape;
 	std::unique_ptr<Mesh::Attributes> attributes;
 	std::unique_ptr<Mesh::Uniforms> uniforms;
 
-	std::chrono::time_point<std::chrono::system_clock> _lastTime;
-	std::chrono::time_point<std::chrono::system_clock> _curTime;
+	std::chrono::time_point<std::chrono::high_resolution_clock> _lastTime;
+	std::chrono::time_point<std::chrono::high_resolution_clock> _curTime;
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> _lastBeatTime;
+	std::chrono::time_point<std::chrono::high_resolution_clock> _curBeatTime;
+
 
 	OpenGLTexture texture;
 	Mesh::Texture* textureToUse = nullptr;

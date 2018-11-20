@@ -34,8 +34,10 @@ GroovRenderer::GroovRenderer()
 
 	controlsOverlay->initialize();
 
-	_lastTime = std::chrono::system_clock::now();
-	_curTime = std::chrono::system_clock::now();
+	_lastTime = std::chrono::high_resolution_clock::now();
+	_curTime = std::chrono::high_resolution_clock::now();
+	_lastBeatTime = std::chrono::high_resolution_clock::now();
+	_curBeatTime = std::chrono::high_resolution_clock::now();
 
 	setSize(500, 500);
 }
@@ -78,11 +80,6 @@ void GroovRenderer::renderOpenGL()
 {
 	jassert(OpenGLHelpers::isContextActive());
 
-	_lastTime = _curTime;
-	_curTime = std::chrono::system_clock::now();
-	std::chrono::duration<double> diff = _curTime - _lastTime;
-	double rdt = diff.count();
-
 	auto desktopScale = (float)openGLContext.getRenderingScale();
 
 	OpenGLHelpers::clear(getUIColourIfAvailable(LookAndFeel_V4::ColourScheme::UIColour::windowBackground,
@@ -115,7 +112,7 @@ void GroovRenderer::renderOpenGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// Set up view matrix + eye position
-	glm::vec3 eye_world = glm::vec3(0.0, 5.0, 10.0);
+	glm::vec3 eye_world = glm::vec3(0.0, 3.0, 15.0);
 	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	// Set up projection matrix
@@ -126,13 +123,23 @@ void GroovRenderer::renderOpenGL()
 
 	//gModelMatrix = glm::scale(gModelMatrix, glm::vec3(0.3f));
 
-	// Scale it so it bounces every frame
-	if (doScaleBounce) {
-		scaleLooper = (scaleLooper > glm::pi<double>()) ? 0.0 : scaleLooper + (glm::pi<double>() * (bpm/60.0) * rdt);
-		loopingScale = (float)abs(cos(scaleLooper));
-		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
+	// Keep the BPM calculation as close to the usage as possible
+	_lastTime = _curTime;
+	_curTime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> diff = _curTime - _lastTime;
+	double rdt = diff.count();
+	
+	if (scaleLooper > 2 * glm::pi<double>()) {
+		scaleLooper = scaleLooper + (glm::pi<double>() * (bpm / 60.0) * rdt) - 2 * glm::pi<double>();
+		_lastBeatTime = _curBeatTime;
+		_curBeatTime = std::chrono::high_resolution_clock::now();
 	}
 	else {
+		scaleLooper += (glm::pi<double>() * (bpm / 60.0) * rdt);
+	}
+
+	// Scale it so it bounces every frame
+	if (doScaleBounce) {
 		loopingScale = (float)abs(cos(scaleLooper));
 		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
 	}
@@ -150,7 +157,7 @@ void GroovRenderer::renderOpenGL()
 	// Convert to GLM matrix so we can set up normal matrix
 	glm::mat4 model = j2gMat4(modelMatrix);
 
-	rotLooper = (rotLooper > (2.0*glm::pi<double>())) ? 0.0 : rotLooper + (glm::pi<double>() * (bpm / 60.0) * rdt);
+	rotLooper = scaleLooper;
 	model = glm::toMat4(glm::angleAxis((float)rotLooper, glm::vec3(0.0f, 1.0f, 0.0f))) * model;
 	if (doScaleBounce) {
 		bounceDistance = abs(cos(scaleLooper));
@@ -220,16 +227,6 @@ Matrix3D<float> GroovRenderer::getProjectionMatrix() const
 	auto h = w * getLocalBounds().toFloat().getAspectRatio(false);
 
 	return Matrix3D<float>::fromFrustum(-w, w, -h, h, 4.0f, 30.0f);
-}
-
-Matrix3D<float> GroovRenderer::getViewMatrix() const
-{
-	auto viewMatrix = draggableOrientation.getRotationMatrix()
-		* Vector3D<float>(0.0f, 1.0f, -10.0f);
-
-	auto rotationMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
-
-	return rotationMatrix * viewMatrix;
 }
 
 void GroovRenderer::setTexture(Mesh::Texture* t)
