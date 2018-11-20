@@ -64,6 +64,8 @@ private:
 	float rotation = 0.0f;
 	float loopingScale = 0.0f;
 	double scaleLooper = 0.0;
+	double rotLooper = 0.0;
+	double bounceDistance = 1.0;
 
 	std::unique_ptr<OpenGLShaderProgram> shader;
 	std::unique_ptr<Mesh::Shape> shape;

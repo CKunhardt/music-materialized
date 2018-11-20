@@ -13,6 +13,8 @@
 #include "GroovPlayer.h"
 
 #include <gtc/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <gtx/quaternion.hpp>
 
 //==============================================================================
 GroovRenderer::GroovRenderer()
@@ -97,6 +99,7 @@ void GroovRenderer::renderOpenGL()
 
 	// Having used the juce 2D renderer, it will have messed-up a whole load of GL state, so
 	// we need to initialise some important settings before doing our normal GL 3D drawing..
+	// C&A note: not sure if this is still necessary, since we're not in the demo runner.
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_BLEND);
@@ -146,6 +149,16 @@ void GroovRenderer::renderOpenGL()
 
 	// Convert to GLM matrix so we can set up normal matrix
 	glm::mat4 model = j2gMat4(modelMatrix);
+
+	rotLooper = (rotLooper > (2.0*glm::pi<double>())) ? 0.0 : rotLooper + (glm::pi<double>() * (bpm / 60.0) * rdt);
+	model = glm::toMat4(glm::angleAxis((float)rotLooper, glm::vec3(0.0f, 1.0f, 0.0f))) * model;
+	if (doScaleBounce) {
+		bounceDistance = abs(cos(scaleLooper));
+	}
+	glm::mat4 transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(rotLooper) * bounceDistance, 0, sin(rotLooper) * bounceDistance));
+	model = transMat * model;
+
+	modelMatrix = g2jMat4(model);
 
 	// Set up normal matrix
 	glm::mat3 normal_mat = glm::transpose(glm::inverse(model));
