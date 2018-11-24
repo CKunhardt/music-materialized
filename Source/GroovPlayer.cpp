@@ -15,11 +15,12 @@
 #include "GroovRenderer.h"
 
 //==============================================================================
-GroovPlayer::GroovPlayer(GroovRenderer& r)
-	: renderer(r)
+GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+	formatManager.registerBasicFormats();
+	setAudioChannels(0, 2);
+
+   
 	addAndMakeVisible(statusLabel);
 	statusLabel.setJustificationType(Justification::topLeft);
 	statusLabel.setFont(Font(14.0f));
@@ -57,18 +58,23 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 
 	addAndMakeVisible(&playButton);
 	playButton.setButtonText("PLAY");
-	playButton.onClick = [this] { openButtonClicked(); };
+	playButton.onClick = [this] { playButtonClicked(); };
 	playButton.setColour(TextButton::buttonColourId, Colours::green);
-	playButton.setEnabled(false);
+	playButton.setEnabled(true);
 
 	addAndMakeVisible(&stopButton);
 	stopButton.setButtonText("STOP");
-	stopButton.onClick = [this] { openButtonClicked(); };
+	stopButton.onClick = [this] { stopButtonClicked(); };
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
 	lookAndFeelChanged();
 
+}
+
+GroovPlayer::~GroovPlayer()
+{
+	shutdownAudio();
 }
 
 void GroovPlayer::initialize()
@@ -127,6 +133,22 @@ void GroovPlayer::mouseMagnify(const MouseEvent&, float magnifyAmmount)
 	sizeSlider.setValue(sizeSlider.getValue() + magnifyAmmount - 1.0f);
 }
 
+void GroovPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
+{
+	transport.prepareToPlay(samplesPerBlockExpected, sampleRate);
+}
+
+void GroovPlayer::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
+{
+	bufferToFill.clearActiveBufferRegion();
+	transport.getNextAudioBlock(bufferToFill);
+}
+
+void GroovPlayer::releaseResources()
+{
+
+}
+
 void GroovPlayer::loadShaders()
 {
 	const auto& p = getShader();
@@ -171,4 +193,58 @@ void GroovPlayer::lookAndFeelChanged()
 void GroovPlayer::openButtonClicked()
 {
 	DBG("clicked");
+	FileChooser chooser ("Choose an Mp3 or Wav File", File::getSpecialLocation(File::userDesktopDirectory), "*.wav; *.mp3");
+	
+	if (chooser.browseForFileToOpen())
+	{
+		File wavFile;
+		wavFile = chooser.getResult();
+		AudioFormatReader* reader = formatManager.createReaderFor(wavFile);
+
+		std::unique_ptr<AudioFormatReaderSource> tempSource(new AudioFormatReaderSource(reader, true));
+
+		transport.setSource(tempSource.get());
+
+		playSource.reset(tempSource.release());
+		
+	}
 }
+
+void GroovPlayer::playButtonClicked()
+{
+	transportStateChanged(Starting);
+}
+
+void GroovPlayer::stopButtonClicked()
+{
+	transportStateChanged(Stopping);
+}
+
+void GroovPlayer::transportStateChanged(TransportState newState)
+{
+	if (newState != state)
+	{
+		state = newState;
+		switch (state)
+		{
+		case Stopped:
+			playButton.setEnabled(true);
+			transport.setPosition(0.0);
+			break;
+		case Starting:
+			stopButton.setEnabled(true);
+			playButton.setEnabled(false);
+			transport.start();
+			break;
+		case GroovPlayer::Stopping:
+			playButton.setEnabled(true);
+			stopButton.setEnabled(false);
+			transport.stop();
+			break;
+		default:
+			break;
+		}
+	}
+
+}
+
