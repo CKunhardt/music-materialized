@@ -49,7 +49,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 	addAndMakeVisible(bpmLabel);
 	bpmLabel.attachToComponent(&bpmSlider, true);
 
-	textures.add(new Mesh::TextureFromAsset("tile_background.png"));
+	textures.add(new Mesh::TextureFromAsset("background.png"));
 
 	lookAndFeelChanged();
 
