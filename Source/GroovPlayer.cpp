@@ -49,6 +49,22 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)
 	addAndMakeVisible(bpmLabel);
 	bpmLabel.attachToComponent(&bpmSlider, true);
 
+	addAndMakeVisible(&openButton);
+	openButton.setButtonText("Open File");
+	openButton.onClick = [this] { openButtonClicked(); };
+
+	addAndMakeVisible(&playButton);
+	playButton.setButtonText("PLAY");
+	playButton.onClick = [this] { openButtonClicked(); };
+	playButton.setColour(TextButton::buttonColourId, Colours::green);
+	playButton.setEnabled(false);
+
+	addAndMakeVisible(&stopButton);
+	stopButton.setButtonText("STOP");
+	stopButton.onClick = [this] { openButtonClicked(); };
+	stopButton.setColour(TextButton::buttonColourId, Colours::red);
+	stopButton.setEnabled(false);
+
 	textures.add(new Mesh::TextureFromAsset("tile_background.png"));
 
 	lookAndFeelChanged();
@@ -75,6 +91,11 @@ void GroovPlayer::resized()
 	auto area = getLocalBounds().reduced(4);
 
 	auto top = area.removeFromTop(100);
+
+	auto musicControls = top.removeFromLeft((area.getWidth() / 2) - 60);
+	stopButton.setBounds(musicControls.removeFromBottom(25));
+	playButton.setBounds(musicControls.removeFromBottom(25));
+	openButton.setBounds(musicControls.removeFromBottom(50));
 
 	auto sliders = top.removeFromRight(area.getWidth() / 2);
 	enableScaleBounce.setBounds(sliders.removeFromBottom(25));
@@ -145,4 +166,9 @@ void GroovPlayer::lookAndFeelChanged()
 {
 	auto editorBackground = getUIColourIfAvailable(LookAndFeel_V4::ColourScheme::UIColour::windowBackground,
 		Colours::white);
+}
+
+void GroovPlayer::openButtonClicked()
+{
+	DBG("clicked");
 }

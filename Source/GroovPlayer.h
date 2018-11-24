@@ -47,6 +47,7 @@ private:
 	enum { shaderLinkDelay = 500 };
 	void timerCallback() override;
 	void lookAndFeelChanged() override;
+	void openButtonClicked();
 
 	GroovRenderer& renderer;
 
@@ -59,6 +60,8 @@ private:
 	Slider speedSlider, sizeSlider, bpmSlider;
 
 	ToggleButton enableScaleBounce{ "Enable Bouncing" };
+
+	TextButton openButton, playButton, stopButton;
 
 	OwnedArray<Mesh::Texture> textures;
 
