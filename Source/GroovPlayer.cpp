@@ -17,8 +17,10 @@
 //==============================================================================
 GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 {
-	formatManager.registerBasicFormats();
 	setAudioChannels(0, 2);
+	formatManager.registerBasicFormats();
+	transport.addChangeListener(this);
+	
 
    
 	addAndMakeVisible(statusLabel);
@@ -149,6 +151,21 @@ void GroovPlayer::releaseResources()
 
 }
 
+void GroovPlayer::changeListenerCallback(ChangeBroadcaster *source)
+{
+	if (source == &transport) 
+	{
+		if (transport.isPlaying())
+		{
+			transportStateChanged(Playing);
+		}
+		else
+		{
+			transportStateChanged(Stopped);
+		}
+	}
+}
+
 void GroovPlayer::loadShaders()
 {
 	const auto& p = getShader();
@@ -201,12 +218,15 @@ void GroovPlayer::openButtonClicked()
 		wavFile = chooser.getResult();
 		AudioFormatReader* reader = formatManager.createReaderFor(wavFile);
 
-		std::unique_ptr<AudioFormatReaderSource> tempSource(new AudioFormatReaderSource(reader, true));
+		if (reader != nullptr)
+		{
+			std::unique_ptr<AudioFormatReaderSource> tempSource(new AudioFormatReaderSource(reader, true));
 
-		transport.setSource(tempSource.get());
+			transport.setSource(tempSource.get());
+			transportStateChanged(Stopping);
 
-		playSource.reset(tempSource.release());
-		
+			playSource.reset(tempSource.release());
+		}
 	}
 }
 
@@ -228,15 +248,17 @@ void GroovPlayer::transportStateChanged(TransportState newState)
 		switch (state)
 		{
 		case Stopped:
-			playButton.setEnabled(true);
 			transport.setPosition(0.0);
+			break;
+		case Playing:
+			playButton.setEnabled(false);
 			break;
 		case Starting:
 			stopButton.setEnabled(true);
 			playButton.setEnabled(false);
 			transport.start();
 			break;
-		case GroovPlayer::Stopping:
+		case Stopping:
 			playButton.setEnabled(true);
 			stopButton.setEnabled(false);
 			transport.stop();
