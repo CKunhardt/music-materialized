@@ -20,6 +20,7 @@
 class GroovRenderer;
 
 class GroovPlayer    :  public AudioAppComponent,
+						public ChangeListener,
 						private Slider::Listener,
 						private Timer
 {
@@ -38,6 +39,7 @@ public:
 	void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
 	void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) override;
 	void releaseResources() override;
+	void changeListenerCallback(ChangeBroadcaster *source) override;
 
 
 	void loadShaders();
@@ -55,6 +57,7 @@ private:
 	enum TransportState
 	{
 		Stopped,
+		Playing,
 		Starting,
 		Stopping
 	};
