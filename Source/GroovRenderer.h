@@ -57,6 +57,8 @@ public:
 
 private:
 	void handleAsyncUpdate() override;
+	
+	void initOrbitals();
 
 	OpenGLContext openGLContext;
 
@@ -64,8 +66,8 @@ private:
 
 	float rotation = 0.0f;
 	float loopingScale = 1.0f;
-	double scaleLooper = 0.0;
-	double rotLooper = 0.0;
+	double looper = 0.0;
+	double curveLooper = 0.0;
 	double bounceDistance = 1.0;
 
 	// Beat delay variables to account for frame sync
@@ -77,16 +79,15 @@ private:
 	int initialBPM = 120;
 
 	std::unique_ptr<OpenGLShaderProgram> shader;
-	std::unique_ptr<Mesh::Shape> shape;
+	std::unique_ptr<Mesh::Shape> papaShape;
+	std::vector<std::shared_ptr<Mesh::Shape>> xOrbitals;
+	std::vector<std::shared_ptr<Mesh::Shape>> yOrbitals;
+
 	std::unique_ptr<Mesh::Attributes> attributes;
 	std::unique_ptr<Mesh::Uniforms> uniforms;
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> _lastTime;
 	std::chrono::time_point<std::chrono::high_resolution_clock> _curTime;
-
-	std::chrono::time_point<std::chrono::high_resolution_clock> _lastBeatTime;
-	std::chrono::time_point<std::chrono::high_resolution_clock> _curBeatTime;
-
 
 	OpenGLTexture texture;
 	Mesh::Texture* textureToUse = nullptr;
@@ -101,6 +102,9 @@ private:
 
 	//==============================================================================
 	void updateShader();
+
+	const int GV_NUM_ORBITALS = 4;
+	const float GV_ORBITAL_DISTANCE = 1.35;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroovRenderer)
 };
