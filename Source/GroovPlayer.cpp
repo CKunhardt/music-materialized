@@ -52,6 +52,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 	addAndMakeVisible(bpmLabel);
 	bpmLabel.attachToComponent(&bpmSlider, true);
 
+
 	textures.add(new Mesh::TextureFromAsset("background.png"));
 
 	addAndMakeVisible(&openButton);
@@ -69,6 +70,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 	stopButton.onClick = [this] { stopButtonClicked(); };
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
+
 
 	lookAndFeelChanged();
 
