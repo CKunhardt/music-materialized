@@ -28,6 +28,8 @@ GroovRenderer::GroovRenderer()
 	controlsOverlay.reset(new GroovPlayer(*this));
 	addAndMakeVisible(controlsOverlay.get());
 
+	initOrbitals();
+
 	openGLContext.setRenderer(this);
 	openGLContext.attachTo(*this);
 	openGLContext.setContinuousRepainting(true);
@@ -36,8 +38,6 @@ GroovRenderer::GroovRenderer()
 
 	_lastTime = std::chrono::high_resolution_clock::now();
 	_curTime = std::chrono::high_resolution_clock::now();
-	_lastBeatTime = std::chrono::high_resolution_clock::now();
-	_curBeatTime = std::chrono::high_resolution_clock::now();
 
 	setSize(500, 500);
 }
@@ -69,7 +69,11 @@ void GroovRenderer::openGLContextClosing()
 
 void GroovRenderer::freeAllContextObjects()
 {
-	shape.reset();
+	papaShape.reset();
+	for (auto xShape : xOrbitals)
+		xShape.reset();
+	for (auto yShape : yOrbitals)
+		yShape.reset();
 	shader.reset();
 	attributes.reset();
 	uniforms.reset();
@@ -111,6 +115,12 @@ void GroovRenderer::renderOpenGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	// Frame time calculations for BPM, etc.
+	_lastTime = _curTime;
+	_curTime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> diff = _curTime - _lastTime;
+	double rdt = diff.count();
+
 	// Set up view matrix + eye position
 	glm::vec3 eye_world = glm::vec3(0.0, 3.0, 15.0);
 	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -118,63 +128,34 @@ void GroovRenderer::renderOpenGL()
 	// Set up projection matrix
 	Matrix3D<float> projectionMatrix = getProjectionMatrix();
 
-	// Set up an identity model matrix
-	glm::mat4 gModelMatrix = glm::mat4(1.0);
+	// Set up light position
+	glm::vec3 light_position = glm::vec3(-3.0f, 3.0f, 3.0f);
 
-	//gModelMatrix = glm::scale(gModelMatrix, glm::vec3(0.3f));
+	// Convert from GLM to Juce data types.
+	Matrix3D<float> viewMatrix = g2jMat4(view);
 
-	// Keep the BPM calculation as close to the usage as possible
-	_lastTime = _curTime;
-	_curTime = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> diff = _curTime - _lastTime;
-	double rdt = diff.count();
-	
-	if (scaleLooper > 2 * glm::pi<double>()) {
-		scaleLooper = scaleLooper + (glm::pi<double>() * (bpm / 60.0) * rdt) - 2 * glm::pi<double>();
-		_lastBeatTime = _curBeatTime;
-		_curBeatTime = std::chrono::high_resolution_clock::now();
-	}
-	else {
-		scaleLooper += (glm::pi<double>() * (bpm / 60.0) * rdt);
-	}
-
-	// Scale it so it bounces every frame
-	if (doScaleBounce) {
-		loopingScale = (float)abs(cos(scaleLooper));
-		gModelMatrix = glm::scale(gModelMatrix, glm::vec3(loopingScale));
-	}
-
-	// Convert from GLM to Juce's limited Matrix format
-	Matrix3D<float> modelMatrix = g2jMat4(gModelMatrix);
-	
 	// Get rotation values from draggableOrientation + rotate it more every frame
 	Matrix3D<float> rotationMatrix = draggableOrientation.getRotationMatrix();
 	auto rotationFrameMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
 
 	// Combine rotations
-	modelMatrix = rotationFrameMatrix * rotationMatrix * modelMatrix;
+	Matrix3D<float> jRotMat = rotationFrameMatrix * rotationMatrix;
 
-	// Convert to GLM matrix so we can set up normal matrix
-	glm::mat4 model = j2gMat4(modelMatrix);
+	glm::mat4 rotMat = j2gMat4(jRotMat);
 
-	rotLooper = scaleLooper;
-	model = glm::toMat4(glm::angleAxis((float)rotLooper, glm::vec3(0.0f, 1.0f, 0.0f))) * model;
-	if (doScaleBounce) {
-		bounceDistance = abs(cos(scaleLooper));
-	}
-	glm::mat4 transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(rotLooper) * bounceDistance, 0, sin(rotLooper) * bounceDistance));
-	model = transMat * model;
+	glm::mat4 beatRot = glm::toMat4(glm::angleAxis((float)looper, glm::vec3(0.0, 1.0, 0.0)));
 
-	modelMatrix = g2jMat4(model);
+	rotMat = beatRot * rotMat;
+
+	// Set up model matrix
+	glm::mat4 model = glm::mat4(1.0);
+
+	model = rotMat * model;
+
+	Matrix3D<float> modelMatrix = g2jMat4(model);
 
 	// Set up normal matrix
 	glm::mat3 normal_mat = glm::transpose(glm::inverse(model));
-
-	// Set up light position
-	glm::vec3 light_position = glm::vec3(-3.0f, 3.0f, 3.0f);
-
-	// Convert from GLM to Juce data types. We've already converted "model" by this point
-	Matrix3D<float> viewMatrix = g2jMat4(view);
 
 	// No native type for normal matrices, so just put into a float[9]. Can't really put this anywhere else or access violations :(
 	float normalMatrix[9];
@@ -211,7 +192,94 @@ void GroovRenderer::renderOpenGL()
 	if (uniforms->bouncingNumber.get() != nullptr)
 		uniforms->bouncingNumber->set(bouncingNumber.getValue());
 
-	shape->draw(openGLContext, *attributes);
+	papaShape->draw(openGLContext, *attributes);
+
+	// Orbitals
+
+	// Set up an identity model matrix
+	glm::mat4 oModelMatrix = glm::mat4(1.0);
+
+	if (looper > 2 * glm::pi<double>()) {
+		looper += (glm::pi<double>() * (bpm / 60.0) * rdt) - 2 * glm::pi<double>();
+	}
+	else {
+		looper += (glm::pi<double>() * (bpm / 60.0) * rdt);
+		
+	}
+
+	// Sinusoidal interpolation between 0 and 1 based on looper.
+
+	if (looper < (glm::pi<double>() ))/// 2.0))
+		curveLooper = glm::pi<double>() * sin(looper / 2.0) / 2.0;
+	else
+		curveLooper = glm::pi<double>() * sin((looper - glm::pi<double>()) / 2.0) / 2.0;
+
+
+	// Scale it so it bounces every frame
+	if (doScaleBounce) {
+		loopingScale = (float)abs(cos(looper));
+		oModelMatrix = glm::scale(oModelMatrix, glm::vec3(loopingScale / 2.0)); // Divided by 2 to make the orbital cubes smaller than the middle cube
+	}
+	else {
+		oModelMatrix = glm::scale(oModelMatrix, glm::vec3(0.5));
+	}
+
+	oModelMatrix = -rotMat * oModelMatrix;
+
+	glm::mat4 transMat;
+	// X-Orbitals
+	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
+		glm::mat4 baseModel = oModelMatrix;
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), cos(looper*wiggleSpeed)/ GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
+		baseModel = transMat * baseModel;
+
+		modelMatrix = g2jMat4(baseModel);
+
+		// Set up normal matrix
+		normal_mat = glm::transpose(glm::inverse(baseModel));
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				int index = (i * 3) + j;
+				normalMatrix[index] = normal_mat[i][j];
+			}
+		}
+
+		if (uniforms->modelMatrix.get() != nullptr)
+			uniforms->modelMatrix->setMatrix4(modelMatrix.mat, 1, false);
+
+		if (uniforms->normalMatrix.get() != nullptr)
+			uniforms->normalMatrix->setMatrix3(normalMatrix, 1, false);
+
+		xOrbitals[i]->draw(openGLContext, *attributes);
+	}
+
+	// Y-Orbitals
+	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
+		glm::mat4 baseModel = oModelMatrix;
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(looper*wiggleSpeed) / GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
+		baseModel = transMat * baseModel;
+
+		modelMatrix = g2jMat4(baseModel);
+
+		// Set up normal matrix
+		normal_mat = glm::transpose(glm::inverse(baseModel));
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				int index = (i * 3) + j;
+				normalMatrix[index] = normal_mat[i][j];
+			}
+		}
+
+		if (uniforms->modelMatrix.get() != nullptr)
+			uniforms->modelMatrix->setMatrix4(modelMatrix.mat, 1, false);
+
+		if (uniforms->normalMatrix.get() != nullptr)
+			uniforms->normalMatrix->setMatrix3(normalMatrix, 1, false);
+
+		xOrbitals[i]->draw(openGLContext, *attributes);
+	}
 
 	// Reset the element buffers so child Components draw correctly
 	openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -226,7 +294,7 @@ Matrix3D<float> GroovRenderer::getProjectionMatrix() const
 	auto w = 1.0f / (scale + 0.1f);
 	auto h = w * getLocalBounds().toFloat().getAspectRatio(false);
 
-	return Matrix3D<float>::fromFrustum(-w, w, -h, h, 4.0f, 30.0f);
+	return Matrix3D<float>::fromFrustum(-w, w, -h, h, 3.0f, 30.0f);
 }
 
 void GroovRenderer::setTexture(Mesh::Texture* t)
@@ -266,14 +334,18 @@ void GroovRenderer::updateShader()
 			&& newShader->addFragmentShader(OpenGLHelpers::translateFragmentShaderToV3(newFragmentShader))
 			&& newShader->link())
 		{
-			shape.reset();
+			papaShape.reset();
+			for (auto xShape : xOrbitals) xShape.reset();
+			for (auto yShape : yOrbitals) yShape.reset();
 			attributes.reset();
 			uniforms.reset();
 
 			shader.reset(newShader.release());
 			shader->use();
 
-			shape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
+			papaShape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
+			for (auto &xShape : xOrbitals) xShape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
+			for (auto &yShape : yOrbitals) yShape.reset(new Mesh::Shape(openGLContext, "cube.obj"));
 			attributes.reset(new Mesh::Attributes(openGLContext, *shader));
 			uniforms.reset(new Mesh::Uniforms(openGLContext, *shader));
 		}
@@ -282,5 +354,15 @@ void GroovRenderer::updateShader()
 
 		newVertexShader = {};
 		newFragmentShader = {};
+	}
+}
+
+void GroovRenderer::initOrbitals() {
+	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
+		std::shared_ptr<Mesh::Shape> xShape;
+		std::shared_ptr<Mesh::Shape> yShape;
+
+		xOrbitals.push_back(xShape);
+		yOrbitals.push_back(yShape);
 	}
 }
