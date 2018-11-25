@@ -209,10 +209,10 @@ void GroovRenderer::renderOpenGL()
 
 	// Sinusoidal interpolation between 0 and 1 based on looper.
 
-	if (looper < glm::pi<double>())
+	if (looper < (glm::pi<double>() ))/// 2.0))
 		curveLooper = glm::pi<double>() * sin(looper / 2.0) / 2.0;
 	else
-		curveLooper = glm::pi<double>() * sin(looper / 2.0) / 2.0;
+		curveLooper = glm::pi<double>() * sin((looper - glm::pi<double>()) / 2.0) / 2.0;
 
 
 	// Scale it so it bounces every frame
@@ -230,7 +230,7 @@ void GroovRenderer::renderOpenGL()
 	// X-Orbitals
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
 		glm::mat4 baseModel = oModelMatrix;
-		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), 0, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), cos(looper*wiggleSpeed)/ GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
 		baseModel = transMat * baseModel;
 
 		modelMatrix = g2jMat4(baseModel);
@@ -257,7 +257,7 @@ void GroovRenderer::renderOpenGL()
 	// Y-Orbitals
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
 		glm::mat4 baseModel = oModelMatrix;
-		transMat = glm::translate(glm::mat4(1.0), glm::vec3(0, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(looper*wiggleSpeed) / GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
 		baseModel = transMat * baseModel;
 
 		modelMatrix = g2jMat4(baseModel);

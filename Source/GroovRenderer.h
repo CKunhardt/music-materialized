@@ -49,7 +49,7 @@ public:
 
 	Draggable3DOrientation draggableOrientation;
 	bool doScaleBounce = false;
-	float scale = 0.5f, rotationSpeed = 0.0f;
+	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f;
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
@@ -105,6 +105,7 @@ private:
 
 	const int GV_NUM_ORBITALS = 4;
 	const float GV_ORBITAL_DISTANCE = 1.35;
+	const float GV_WIGGLE_DISTANCE = 10.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroovRenderer)
 };
