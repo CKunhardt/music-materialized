@@ -20,6 +20,7 @@
 class GroovRenderer;
 
 class GroovPlayer    :  public AudioAppComponent,
+						//public AudioProcessor,
 						public ChangeListener,
 						private Slider::Listener,
 						private Timer
@@ -36,11 +37,14 @@ public:
 	void mouseDrag(const MouseEvent& e) override;
 	void mouseWheelMove(const MouseEvent&, const MouseWheelDetails& d) override;
 	void mouseMagnify(const MouseEvent&, float magnifyAmount) override;
+
 	void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
 	void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) override;
 	void releaseResources() override;
+
 	void changeListenerCallback(ChangeBroadcaster *source) override;
 
+	//const String getName() const override;
 
 	void loadShaders();
 

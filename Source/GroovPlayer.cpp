@@ -13,6 +13,7 @@
 #include "Shaders.h"
 #include "GroovPlayer.h"
 #include "GroovRenderer.h"
+#include "Utilities.h"
 
 //==============================================================================
 GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
@@ -212,7 +213,7 @@ void GroovPlayer::lookAndFeelChanged()
 void GroovPlayer::openButtonClicked()
 {
 	DBG("clicked");
-	FileChooser chooser ("Choose an Mp3 or Wav File", File::getSpecialLocation(File::userDesktopDirectory), "*.wav; *.mp3");
+	FileChooser chooser ("Choose an Mp3 or Wav File", getProgramDirectory().getChildFile("Assets"), "*.wav; *.mp3");
 	
 	if (chooser.browseForFileToOpen())
 	{
