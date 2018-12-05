@@ -18,6 +18,10 @@
             file="Source/GroovRenderer.cpp"/>
       <FILE id="LjQvnP" name="GroovRenderer.h" compile="0" resource="0" file="Source/GroovRenderer.h"/>
       <FILE id="wGdi85" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="vy0q7h" name="GroovProcessor.cpp" compile="1" resource="0"
+            file="Source/GroovProcessor.cpp"/>
+      <FILE id="pCUEW8" name="GroovProcessor.h" compile="0" resource="0"
+            file="Source/GroovProcessor.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
