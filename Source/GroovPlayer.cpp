@@ -13,17 +13,14 @@
 #include "Shaders.h"
 #include "GroovPlayer.h"
 #include "GroovRenderer.h"
+#include "GroovAudioApp.h"
 #include "Utilities.h"
 
 //==============================================================================
-GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
+GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 {
-	setAudioChannels(0, 2);
-	formatManager.registerBasicFormats();
-	transport.addChangeListener(this);
-	
+	audioApp.reset(new GroovAudioApp (*this));
 
-   
 	addAndMakeVisible(statusLabel);
 	statusLabel.setJustificationType(Justification::topLeft);
 	statusLabel.setFont(Font(14.0f));
@@ -53,7 +50,6 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 	addAndMakeVisible(bpmLabel);
 	bpmLabel.attachToComponent(&bpmSlider, true);
 
-
 	textures.add(new Mesh::TextureFromAsset("background.png"));
 
 	addAndMakeVisible(&openButton);
@@ -72,14 +68,12 @@ GroovPlayer::GroovPlayer(GroovRenderer& r)	: renderer(r), state(Stopped)
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
-
 	lookAndFeelChanged();
-
 }
 
 GroovPlayer::~GroovPlayer()
 {
-	shutdownAudio();
+	
 }
 
 void GroovPlayer::initialize()
@@ -138,37 +132,6 @@ void GroovPlayer::mouseMagnify(const MouseEvent&, float magnifyAmmount)
 	sizeSlider.setValue(sizeSlider.getValue() + magnifyAmmount - 1.0f);
 }
 
-void GroovPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
-{
-	transport.prepareToPlay(samplesPerBlockExpected, sampleRate);
-}
-
-void GroovPlayer::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
-{
-	bufferToFill.clearActiveBufferRegion();
-	transport.getNextAudioBlock(bufferToFill);
-}
-
-void GroovPlayer::releaseResources()
-{
-
-}
-
-void GroovPlayer::changeListenerCallback(ChangeBroadcaster *source)
-{
-	if (source == &transport) 
-	{
-		if (transport.isPlaying())
-		{
-			transportStateChanged(Playing);
-		}
-		else
-		{
-			transportStateChanged(Stopped);
-		}
-	}
-}
-
 void GroovPlayer::loadShaders()
 {
 	const auto& p = getShader();
@@ -217,59 +180,34 @@ void GroovPlayer::openButtonClicked()
 	
 	if (chooser.browseForFileToOpen())
 	{
-		File wavFile;
-		wavFile = chooser.getResult();
-		AudioFormatReader* reader = formatManager.createReaderFor(wavFile);
-
-		if (reader != nullptr)
-		{
-			std::unique_ptr<AudioFormatReaderSource> tempSource(new AudioFormatReaderSource(reader, true));
-
-			transport.setSource(tempSource.get());
-			transportStateChanged(Stopping);
-
-			playSource.reset(tempSource.release());
-		}
+		audioApp->playFile(chooser.getResult());
 	}
 }
 
 void GroovPlayer::playButtonClicked()
 {
-	transportStateChanged(Starting);
+	audioApp->transportStateChanged(GroovAudioApp::TransportState::Starting);
 }
 
 void GroovPlayer::stopButtonClicked()
 {
-	transportStateChanged(Stopping);
+	audioApp->transportStateChanged(GroovAudioApp::TransportState::Stopping);
 }
 
-void GroovPlayer::transportStateChanged(TransportState newState)
+void GroovPlayer::changeButtonEnabled(ButtonName buttonName, bool state)
 {
-	if (newState != state)
+	Button::ButtonState newState = (Button::ButtonState)state;
+	switch (buttonName)
 	{
-		state = newState;
-		switch (state)
-		{
-		case Stopped:
-			transport.setPosition(0.0);
-			break;
-		case Playing:
-			playButton.setEnabled(false);
-			break;
-		case Starting:
-			stopButton.setEnabled(true);
-			playButton.setEnabled(false);
-			transport.start();
-			break;
-		case Stopping:
-			playButton.setEnabled(true);
-			stopButton.setEnabled(false);
-			transport.stop();
-			break;
-		default:
-			break;
-		}
+	case OpenButton:
+		openButton.setEnabled(newState);
+		break;
+	case PlayButton:
+		playButton.setEnabled(newState);
+		break;
+	case StopButton:
+		stopButton.setEnabled(newState);
+		break;
 	}
-
 }
 

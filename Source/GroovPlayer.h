@@ -18,10 +18,9 @@
 */
 
 class GroovRenderer;
+class GroovAudioApp;
 
-class GroovPlayer    :  public AudioAppComponent,
-						/*public AudioProcessor,*/
-						public ChangeListener,
+class GroovPlayer    :  public Component,
 						private Slider::Listener,
 						private Timer
 {
@@ -65,11 +64,13 @@ public:
 	void mouseWheelMove(const MouseEvent&, const MouseWheelDetails& d) override;
 	void mouseMagnify(const MouseEvent&, float magnifyAmount) override;
 
-	void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
-	void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) override;
-	void releaseResources() override;
+	enum ButtonName {
+		OpenButton,
+		PlayButton,
+		StopButton
+	};
 
-	void changeListenerCallback(ChangeBroadcaster *source) override;
+	void changeButtonEnabled(ButtonName buttonName, bool state);
 
 	void loadShaders();
 
@@ -83,14 +84,6 @@ private:
 	void sliderValueChanged(Slider*) override;
 
 	enum { shaderLinkDelay = 500 };
-	enum TransportState
-	{
-		Stopped,
-		Playing,
-		Starting,
-		Stopping
-	};
-	TransportState state;
 
 	void timerCallback() override;
 	void lookAndFeelChanged() override;
@@ -98,13 +91,9 @@ private:
 	void openButtonClicked();
 	void playButtonClicked();
 	void stopButtonClicked();
-	void transportStateChanged(TransportState newState);
 
 	GroovRenderer& renderer;
-
-	AudioFormatManager formatManager;
-	std::unique_ptr<AudioFormatReaderSource> playSource;
-	AudioTransportSource transport;
+	std::unique_ptr<GroovAudioApp> audioApp;
 
 	Label speedLabel{ {}, "Speed: " },
 		zoomLabel{ {}, "Zoom: " },
