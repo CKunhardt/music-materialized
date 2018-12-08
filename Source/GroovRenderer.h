@@ -47,6 +47,8 @@ public:
 
     void resized() override;
 
+	std::unique_ptr<GroovPlayer> controlsOverlay;
+
 	Draggable3DOrientation draggableOrientation;
 	bool doScaleBounce = false;
 	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f;
@@ -62,8 +64,6 @@ private:
 	void initOrbitals();
 
 	OpenGLContext openGLContext;
-
-	std::unique_ptr<GroovPlayer> controlsOverlay;
 
 	float rotation = 0.0f;
 	float loopingScale = 1.0f;

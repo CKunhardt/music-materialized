@@ -69,7 +69,7 @@ public:
 		PlayButton,
 		StopButton
 	};
-
+	
 	void changeButtonEnabled(ButtonName buttonName, bool state);
 
 	void loadShaders();

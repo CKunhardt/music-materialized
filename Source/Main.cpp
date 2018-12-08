@@ -10,6 +10,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "GroovRenderer.h"
+#include "GroovPlayer.h"
 
 //==============================================================================
 class GroovApplication : public JUCEApplication
@@ -26,15 +27,17 @@ public:
 	void initialise(const String& commandLine) override
 	{
 		// This method is where you should put your application's initialisation code..
-
-		mainWindow.reset(new MainWindow(getApplicationName()));
+		renderer.reset(new GroovRenderer());
+		mainWindow.reset(new MainWindow(getApplicationName(), renderer.get()));
+		displayWindow.reset(new DisplayWindow(getApplicationName() + " Display", renderer.get()));
 	}
 
 	void shutdown() override
 	{
 		// Add your application's shutdown code here..
-
+		renderer = nullptr;
 		mainWindow = nullptr; // (deletes our window)
+		displayWindow = nullptr;
 	}
 
 	//==============================================================================
@@ -60,14 +63,16 @@ public:
 	class MainWindow : public DocumentWindow
 	{
 	public:
-		MainWindow(String name) : DocumentWindow(name,
+		MainWindow(String name, GroovRenderer* r) : DocumentWindow(name,
 			Desktop::getInstance().getDefaultLookAndFeel()
 			.findColour(ResizableWindow::backgroundColourId),
 			DocumentWindow::allButtons)
 		{
 			setUsingNativeTitleBar(true);
-			setContentOwned(new GroovRenderer(), true);
+			setContentOwned(r->controlsOverlay.get(), true);
 			setResizable(true, true);
+
+			setSize(500, 500);
 
 			centreWithSize(getWidth(), getHeight());
 			setVisible(true);
@@ -92,8 +97,29 @@ public:
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
 	};
 
+	class DisplayWindow : public TopLevelWindow
+	{
+	public:
+		DisplayWindow(String name, GroovRenderer* r) : TopLevelWindow(name, true)
+		{
+			addAndMakeVisible(r);
+			auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
+			setSize(screen.getRight(), screen.getBottom());
+			setOpaque(true);
+			setVisible(true);
+		}
+		~DisplayWindow()
+		{
+			removeAllChildren();
+		}
+
+		void paint(Graphics& g) {};
+	};
+
 private:
+	std::unique_ptr<GroovRenderer> renderer;
 	std::unique_ptr<MainWindow> mainWindow;
+	std::unique_ptr<DisplayWindow> displayWindow;
 };
 
 //==============================================================================

@@ -26,7 +26,7 @@ GroovRenderer::GroovRenderer()
 
 	setOpaque(true);
 	controlsOverlay.reset(new GroovPlayer(*this));
-	addAndMakeVisible(controlsOverlay.get());
+	// addAndMakeVisible(controlsOverlay.get());
 
 	initOrbitals();
 
@@ -38,8 +38,10 @@ GroovRenderer::GroovRenderer()
 
 	_lastTime = std::chrono::high_resolution_clock::now();
 	_curTime = std::chrono::high_resolution_clock::now();
+	
+	auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
 
-	setSize(500, 500);
+	setSize(screen.getRight(), screen.getBottom());
 }
 
 GroovRenderer::~GroovRenderer()
@@ -122,7 +124,7 @@ void GroovRenderer::renderOpenGL()
 	double rdt = diff.count();
 
 	// Set up view matrix + eye position
-	glm::vec3 eye_world = glm::vec3(0.0, 3.0, 15.0);
+	glm::vec3 eye_world = glm::vec3(0.0, 3.0, 25.0);
 	glm::mat4 view = glm::lookAt(eye_world, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	// Set up projection matrix
