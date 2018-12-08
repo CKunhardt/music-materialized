@@ -202,6 +202,10 @@ void GroovRenderer::renderOpenGL()
 	if (looper > 2 * glm::pi<double>()) {
 		looper += (glm::pi<double>() * (bpm / 60.0) * rdt) - 2 * glm::pi<double>();
 	}
+	else if (resetPeriod) {
+		looper = (glm::pi<double>() * (bpm / 60.0) * rdt);
+		resetPeriod = false;
+	}
 	else {
 		looper += (glm::pi<double>() * (bpm / 60.0) * rdt);
 		
@@ -365,4 +369,8 @@ void GroovRenderer::initOrbitals() {
 		xOrbitals.push_back(xShape);
 		yOrbitals.push_back(yShape);
 	}
+}
+
+void GroovRenderer::resetRotationalPeriod() {
+	resetPeriod = true;
 }

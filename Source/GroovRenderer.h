@@ -53,6 +53,7 @@ public:
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
+	void resetRotationalPeriod();
 	BouncingNumber bouncingNumber;
 
 private:
@@ -69,6 +70,7 @@ private:
 	double looper = 0.0;
 	double curveLooper = 0.0;
 	double bounceDistance = 1.0;
+	bool resetPeriod = false;
 
 	// Beat delay variables to account for frame sync
 	bool shouldDelay = false;
