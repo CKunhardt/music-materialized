@@ -103,8 +103,14 @@ public:
 		DisplayWindow(String name, GroovRenderer* r) : TopLevelWindow(name, true)
 		{
 			addAndMakeVisible(r);
-			auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
-			setSize(screen.getRight(), screen.getBottom());
+			if (Desktop::getInstance().getDisplays().displays.size() > 1) {
+				auto screen = Desktop::getInstance().getDisplays().displays[1].totalArea;
+				setBounds(screen);
+			}
+			else {
+				auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
+				setBounds(screen);
+			}
 			setOpaque(true);
 			setVisible(true);
 		}

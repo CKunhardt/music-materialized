@@ -91,7 +91,7 @@ void GroovAudioApp::playFile(File audioFile)
 	{
 		std::unique_ptr<AudioFormatReaderSource> tempSource(new AudioFormatReaderSource(reader, true));
 
-		transport.setSource(tempSource.get());
+		transport.setSource(tempSource.get(),0,nullptr,reader->sampleRate);
 		transportStateChanged(Stopping);
 
 		playSource.reset(tempSource.release());

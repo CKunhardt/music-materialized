@@ -55,7 +55,8 @@ public:
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
-	void resetRotationalPeriod();
+	void startPlaying();
+	void stopPlaying();
 	BouncingNumber bouncingNumber;
 
 private:
@@ -71,6 +72,7 @@ private:
 	double curveLooper = 0.0;
 	double bounceDistance = 1.0;
 	bool resetPeriod = false;
+	bool audioStopped = true;
 
 	// Beat delay variables to account for frame sync
 	bool shouldDelay = false;
@@ -107,7 +109,7 @@ private:
 
 	const int GV_NUM_ORBITALS = 4;
 	const float GV_ORBITAL_DISTANCE = 1.35;
-	const float GV_WIGGLE_DISTANCE = 10.0f;
+	const float GV_INV_WIGGLE_DISTANCE = 10.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroovRenderer)
 };

@@ -187,12 +187,13 @@ void GroovPlayer::openButtonClicked()
 void GroovPlayer::playButtonClicked()
 {
 	audioApp->transportStateChanged(GroovAudioApp::TransportState::Starting);
-	renderer.resetRotationalPeriod();
+	renderer.startPlaying();
 }
 
 void GroovPlayer::stopButtonClicked()
 {
 	audioApp->transportStateChanged(GroovAudioApp::TransportState::Stopping);
+	renderer.stopPlaying();
 }
 
 void GroovPlayer::changeButtonEnabled(ButtonName buttonName, bool state)

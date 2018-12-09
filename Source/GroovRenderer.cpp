@@ -39,9 +39,14 @@ GroovRenderer::GroovRenderer()
 	_lastTime = std::chrono::high_resolution_clock::now();
 	_curTime = std::chrono::high_resolution_clock::now();
 	
-	auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
-
-	setSize(screen.getRight(), screen.getBottom());
+	if (Desktop::getInstance().getDisplays().displays.size() > 1) {
+		auto screen = Desktop::getInstance().getDisplays().displays[1].totalArea;
+		setSize(screen.getWidth(), screen.getHeight());
+	}
+	else {
+		auto screen = Desktop::getInstance().getDisplays().getMainDisplay().totalArea;
+		setSize(screen.getWidth(), screen.getHeight());
+	}
 }
 
 GroovRenderer::~GroovRenderer()
@@ -236,7 +241,8 @@ void GroovRenderer::renderOpenGL()
 	// X-Orbitals
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
 		glm::mat4 baseModel = oModelMatrix;
-		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), cos(looper*wiggleSpeed)/ GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
+		float wiggleDistance = (audioStopped) ? 1000.0f : GV_INV_WIGGLE_DISTANCE;
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), cos(looper*wiggleSpeed)/ wiggleDistance, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
 		baseModel = transMat * baseModel;
 
 		modelMatrix = g2jMat4(baseModel);
@@ -263,7 +269,8 @@ void GroovRenderer::renderOpenGL()
 	// Y-Orbitals
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
 		glm::mat4 baseModel = oModelMatrix;
-		transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(looper*wiggleSpeed) / GV_WIGGLE_DISTANCE, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
+		float wiggleDistance = (audioStopped) ? 1000.0f : GV_INV_WIGGLE_DISTANCE;
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(looper*wiggleSpeed) / wiggleDistance, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
 		baseModel = transMat * baseModel;
 
 		modelMatrix = g2jMat4(baseModel);
@@ -373,6 +380,13 @@ void GroovRenderer::initOrbitals() {
 	}
 }
 
-void GroovRenderer::resetRotationalPeriod() {
+void GroovRenderer::startPlaying() {
 	resetPeriod = true;
+	audioStopped = false;
 }
+
+void GroovRenderer::stopPlaying() {
+	audioStopped = true;
+}
+
+
