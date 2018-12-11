@@ -173,6 +173,8 @@ void GroovRenderer::renderOpenGL()
 		}
 	}
 
+	glm::vec3 userColor = angleToRGB(glm::degrees(looper));
+
 	shader->use();
 
 	if (uniforms->modelMatrix.get() != nullptr)
@@ -196,8 +198,8 @@ void GroovRenderer::renderOpenGL()
 	if (uniforms->lightPosition.get() != nullptr)
 		uniforms->lightPosition->set(light_position.x, light_position.y, light_position.z);
 
-	if (uniforms->bouncingNumber.get() != nullptr)
-		uniforms->bouncingNumber->set(bouncingNumber.getValue());
+	if (uniforms->userColor != nullptr)
+		uniforms->userColor->set(userColor.r, userColor.g, userColor.b);
 
 	papaShape->draw(openGLContext, *attributes);
 
@@ -389,4 +391,65 @@ void GroovRenderer::stopPlaying() {
 	audioStopped = true;
 }
 
+// Adapted from https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
+// Takes h in degrees, mind you! Make sure to convert with glm::radians();
+// colorVal and colorSat are parameterized controls. Maybe hue's range will be too, at some point? Not sure.
+glm::vec3 GroovRenderer::angleToRGB(double h) {
+
+	// hh is a temporary value used for calculating hue in region. Final color is some combination of p, q, t, and colorVal.
+	double hh, p, q, t, ff;
+
+	// I 
+	int i;
+	glm::vec3 color = glm::vec3();
+
+	if (colorSat <= 0.0f) {
+		color = glm::vec3(colorVal);
+		return color;
+	}
+
+	hh = h;
+	if (hh >= 360.0) hh = 0.0;
+	hh /= 60.0;
+	i = (int)hh;
+	ff = hh - i;
+	p = colorVal * (1.0 - colorSat);
+	q = colorVal * (1.0 - (colorSat * ff));
+	t = colorVal * (1.0 - (colorSat * (1.0 - ff)));
+
+	switch (i) {
+	case 0:
+		color.r = colorVal;
+		color.g = t;
+		color.b = p;
+		break;
+	case 1:
+		color.r = q;
+		color.g = colorVal;
+		color.b = p;
+		break;
+	case 2:
+		color.r = p;
+		color.g = colorVal;
+		color.b = t;
+		break;
+	case 3:
+		color.r = p;
+		color.g = q;
+		color.b = colorVal;
+		break;
+	case 4:
+		color.r = t;
+		color.g = p;
+		color.b = colorVal;
+		break;
+	case 5:
+	default:
+		color.r = colorVal;
+		color.g = p;
+		color.b = q;
+		break;
+	}
+	return color;
+}
 

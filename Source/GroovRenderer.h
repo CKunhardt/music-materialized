@@ -51,13 +51,12 @@ public:
 
 	Draggable3DOrientation draggableOrientation;
 	bool doScaleBounce = false;
-	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f;
+	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f, colorSat = 0.5f, colorVal = 1.0f;
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
 	void startPlaying();
 	void stopPlaying();
-	BouncingNumber bouncingNumber;
 
 private:
 	void handleAsyncUpdate() override;
@@ -106,6 +105,8 @@ private:
 
 	//==============================================================================
 	void updateShader();
+
+	glm::vec3 angleToRGB(double h);
 
 	const int GV_NUM_ORBITALS = 4;
 	const float GV_ORBITAL_DISTANCE = 1.35;

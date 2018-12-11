@@ -4,6 +4,7 @@
     Mesh.h
     Created: 2 Nov 2018 3:08:20pm
     Author:  ClintonK
+	Notes: Adapted from JUCE's example OpenGLDemo.h
 
   ==============================================================================
 */
@@ -16,21 +17,14 @@
 
 class Mesh {
 public:
-	/** Vertex data to be passed to the shaders.
-		For the purposes of this demo, each vertex will have a 3D position, a colour and a
-		2D texture co-ordinate. Of course you can ignore these or manipulate them in the
-		shader programs but are some useful defaults to work from.
-	 */
+	/** Vertex data to be passed to the shaders.*/
 	struct Vertex
 	{
 		float position[3];
 		float normal[3];
-		float colour[4];
+		float color[4];
 		float texCoord[2];
 	};
-
-	//==============================================================================
-	// This class just manages the attributes that our shaders use.
 
 	struct Attributes
 	{
@@ -38,7 +32,7 @@ public:
 		{
 			position.reset(createAttribute(openGLContext, shader, "position"));
 			normal.reset(createAttribute(openGLContext, shader, "normal"));
-			sourceColour.reset(createAttribute(openGLContext, shader, "sourceColour"));
+			sourceColor.reset(createAttribute(openGLContext, shader, "sourceColor"));
 			textureCoordIn.reset(createAttribute(openGLContext, shader, "textureCoordIn"));
 		}
 
@@ -56,10 +50,10 @@ public:
 				openGLContext.extensions.glEnableVertexAttribArray(normal->attributeID);
 			}
 
-			if (sourceColour.get() != nullptr)
+			if (sourceColor.get() != nullptr)
 			{
-				openGLContext.extensions.glVertexAttribPointer(sourceColour->attributeID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(float) * 6));
-				openGLContext.extensions.glEnableVertexAttribArray(sourceColour->attributeID);
+				openGLContext.extensions.glVertexAttribPointer(sourceColor->attributeID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(float) * 6));
+				openGLContext.extensions.glEnableVertexAttribArray(sourceColor->attributeID);
 			}
 
 			if (textureCoordIn.get() != nullptr)
@@ -73,11 +67,11 @@ public:
 		{
 			if (position.get() != nullptr)        openGLContext.extensions.glDisableVertexAttribArray(position->attributeID);
 			if (normal.get() != nullptr)          openGLContext.extensions.glDisableVertexAttribArray(normal->attributeID);
-			if (sourceColour.get() != nullptr)    openGLContext.extensions.glDisableVertexAttribArray(sourceColour->attributeID);
+			if (sourceColor.get() != nullptr)    openGLContext.extensions.glDisableVertexAttribArray(sourceColor->attributeID);
 			if (textureCoordIn.get() != nullptr)  openGLContext.extensions.glDisableVertexAttribArray(textureCoordIn->attributeID);
 		}
 
-		std::unique_ptr<OpenGLShaderProgram::Attribute> position, normal, sourceColour, textureCoordIn;
+		std::unique_ptr<OpenGLShaderProgram::Attribute> position, normal, sourceColor, textureCoordIn;
 
 	private:
 		static OpenGLShaderProgram::Attribute* createAttribute(OpenGLContext& openGLContext,
@@ -92,7 +86,7 @@ public:
 	};
 
 	//==============================================================================
-	// This class just manages the uniform values that the demo shaders use.
+	// This struct manages all of our uniforms that are passed through to the shader
 
 	struct Uniforms
 	{
@@ -105,10 +99,10 @@ public:
 			texture.reset(createUniform(openGLContext, shader, "textureSampler"));
 			eyePosition.reset(createUniform(openGLContext, shader, "eyePosition"));
 			lightPosition.reset(createUniform(openGLContext, shader, "lightPosition"));
-			bouncingNumber.reset(createUniform(openGLContext, shader, "bouncingNumber"));
+			userColor.reset(createUniform(openGLContext, shader, "userColor"));
 		}
 
-		std::unique_ptr<OpenGLShaderProgram::Uniform> modelMatrix, projectionMatrix, viewMatrix, normalMatrix, texture, eyePosition, lightPosition, bouncingNumber;
+		std::unique_ptr<OpenGLShaderProgram::Uniform> modelMatrix, projectionMatrix, viewMatrix, normalMatrix, texture, eyePosition, lightPosition, userColor;
 
 	private:
 		static OpenGLShaderProgram::Uniform* createUniform(OpenGLContext& openGLContext,
@@ -124,7 +118,7 @@ public:
 
 	//==============================================================================
 	/** This loads a 3D model from an OBJ file and converts it into some vertex buffers
-		that we can draw.
+		that we can draw. Copyright JUCE
 	*/
 	struct Shape
 	{
