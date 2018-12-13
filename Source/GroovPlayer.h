@@ -96,12 +96,16 @@ private:
 	std::unique_ptr<GroovAudioApp> audioApp;
 
 	Label speedLabel{ {}, "Speed: " },
+		wiggleLabel{ {}, "Wiggle: "},
+		colorSatLabel{ {}, "Saturation: "},
+		colorValLabel{ {}, "Brightness: "},
 		zoomLabel{ {}, "Zoom: " },
 		bpmLabel{ {}, "BPM: " };
 
 	CodeDocument vertexDocument, fragmentDocument;
 	
-	Slider speedSlider, sizeSlider, bpmSlider;
+	Slider speedSlider, sizeSlider, bpmSlider, 
+		wiggleSlider, colorSatSlider, colorValSlider;
 
 	ToggleButton enableScaleBounce{ "Enable Bouncing" };
 

@@ -114,12 +114,10 @@ void GroovPlayer::resized()
 
 void GroovPlayer::mouseDown(const MouseEvent& e)
 {
-	renderer.draggableOrientation.mouseDown(e.getPosition());
 }
 
 void GroovPlayer::mouseDrag(const MouseEvent& e)
 {
-	renderer.draggableOrientation.mouseDrag(e.getPosition());
 }
 
 void GroovPlayer::mouseWheelMove(const MouseEvent&, const MouseWheelDetails& d)
