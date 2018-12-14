@@ -92,6 +92,10 @@ private:
 	void playButtonClicked();
 	void stopButtonClicked();
 
+	void freezeBlocks();
+	int lastBPM;
+	bool frozen;
+
 	GroovRenderer& renderer;
 	std::unique_ptr<GroovAudioApp> audioApp;
 
@@ -107,7 +111,8 @@ private:
 	Slider speedSlider, sizeSlider, bpmSlider, 
 		wiggleSlider, colorSatSlider, colorValSlider;
 
-	ToggleButton enableScaleBounce{ "Enable Bouncing" };
+	ToggleButton enableScaleBounce{ "Enable Bouncing" },
+		freeze{ "FREEZE!" };
 
 	TextButton openButton, playButton, stopButton;
 

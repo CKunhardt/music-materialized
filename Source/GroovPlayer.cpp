@@ -25,6 +25,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	statusLabel.setJustificationType(Justification::topLeft);
 	statusLabel.setFont(Font(14.0f));
 
+	// SLIDERS -----------------------
 	addAndMakeVisible(sizeSlider);
 	sizeSlider.setRange(1.0, 4.0, 0.01);
 	sizeSlider.addListener(this);
@@ -61,18 +62,24 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	addAndMakeVisible(colorValLabel);
 	colorValLabel.attachToComponent(&colorValSlider, true);
 
-	addAndMakeVisible(enableScaleBounce);
-	enableScaleBounce.onClick = [this] {renderer.doScaleBounce = enableScaleBounce.getToggleState(); };
-
 	addAndMakeVisible(bpmSlider);
-	bpmSlider.setRange(60, 250, 1);
+	bpmSlider.setRange(0, 250, 1);
 	bpmSlider.addListener(this);
 
 	addAndMakeVisible(bpmLabel);
 	bpmLabel.attachToComponent(&bpmSlider, true);
 
-	textures.add(new Mesh::TextureFromAsset("background.png"));
+	// TOGGLE BUTTONS -----------------------
 
+	// this button toggles the feature that bounces the cubes
+	addAndMakeVisible(enableScaleBounce);
+	enableScaleBounce.onClick = [this] {renderer.doScaleBounce = enableScaleBounce.getToggleState(); };
+
+	// this button toggles the feature that 'freezes' the animation by setting BPM to 0
+	addAndMakeVisible(freeze);
+	freeze.onClick = [this] { freezeBlocks(); };
+
+	// FILE LOADING BUTTONS -----------------------
 	addAndMakeVisible(&openButton);
 	openButton.setButtonText("Open File");
 	openButton.onClick = [this] { openButtonClicked(); };
@@ -89,6 +96,8 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
+	textures.add(new Mesh::TextureFromAsset("background.png"));
+
 	lookAndFeelChanged();
 }
 
@@ -101,7 +110,11 @@ void GroovPlayer::initialize()
 {
 	speedSlider.setValue(0.01);
 	sizeSlider.setValue(2.5);
-	bpmSlider.setValue(120);
+
+	bpmSlider.setValue(125);
+	lastBPM = 125;
+	frozen = false;
+
 	wiggleSlider.setValue(4.0);
 	colorSatSlider.setValue(0.5);
 	colorValSlider.setValue(1.0);
@@ -119,22 +132,23 @@ void GroovPlayer::resized()
 
 	auto area = getLocalBounds().reduced(4);
 
-	auto top = area.removeFromTop(175);
+	auto top = area.removeFromTop(200);
 
 	auto musicControls = top.removeFromLeft((area.getWidth() / 2) - 90);
-	musicControls = musicControls.removeFromTop(75);
+	musicControls = musicControls.removeFromTop(100);
 	stopButton.setBounds(musicControls.removeFromBottom(25));
 	playButton.setBounds(musicControls.removeFromBottom(25));
 	openButton.setBounds(musicControls.removeFromBottom(50));
 
-	auto sliders = top.removeFromRight(area.getWidth() / 2);
-	enableScaleBounce.setBounds(sliders.removeFromBottom(25));
-	wiggleSlider.setBounds(sliders.removeFromBottom(25));
-	colorSatSlider.setBounds(sliders.removeFromBottom(25));
-	colorValSlider.setBounds(sliders.removeFromBottom(25));
-	bpmSlider.setBounds(sliders.removeFromBottom(25));
-	speedSlider.setBounds(sliders.removeFromBottom(25));
-	sizeSlider.setBounds(sliders.removeFromBottom(25));
+	auto controls = top.removeFromRight(area.getWidth() / 2);
+	freeze.setBounds(controls.removeFromBottom(25));
+	enableScaleBounce.setBounds(controls.removeFromBottom(25));
+	colorSatSlider.setBounds(controls.removeFromBottom(25));
+	colorValSlider.setBounds(controls.removeFromBottom(25));
+	wiggleSlider.setBounds(controls.removeFromBottom(25));
+	bpmSlider.setBounds(controls.removeFromBottom(25));
+	speedSlider.setBounds(controls.removeFromBottom(25));
+	sizeSlider.setBounds(controls.removeFromBottom(25));
 	
 
 	top.removeFromRight(70);
@@ -201,6 +215,22 @@ void GroovPlayer::lookAndFeelChanged()
 {
 	auto editorBackground = getUIColourIfAvailable(LookAndFeel_V4::ColourScheme::UIColour::windowBackground,
 		Colours::white);
+}
+
+void GroovPlayer::freezeBlocks()
+{
+	if (!frozen)
+	{
+		lastBPM = bpmSlider.getValue();
+		bpmSlider.setValue(0);
+		frozen = true;
+	}
+	else
+	{
+		bpmSlider.setValue(lastBPM);
+		frozen = false;
+	}
+	
 }
 
 void GroovPlayer::openButtonClicked()
