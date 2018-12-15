@@ -96,8 +96,6 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	stopButton.setColour(TextButton::buttonColourId, Colours::red);
 	stopButton.setEnabled(false);
 
-	textures.add(new Mesh::TextureFromAsset("background.png"));
-
 	lookAndFeelChanged();
 }
 
@@ -119,7 +117,6 @@ void GroovPlayer::initialize()
 	colorSatSlider.setValue(0.5);
 	colorValSlider.setValue(1.0);
 
-	selectTexture(1);
 	loadShaders();
 }
 
@@ -175,23 +172,11 @@ void GroovPlayer::mouseMagnify(const MouseEvent&, float magnifyAmmount)
 
 void GroovPlayer::loadShaders()
 {
-	const auto& p = getShader();
+	const auto& shader = getShader();
+	const auto& shaderSky = getSkyShader();
 
-	vertexDocument.replaceAllContent(p.vertexShader);
-	fragmentDocument.replaceAllContent(p.fragmentShader);
-
-	startTimer(1);
-}
-
-void GroovPlayer::selectTexture(int itemID)
-{
-	if (auto* t = textures[itemID - 1])
-		renderer.setTexture(t);
-}
-
-void GroovPlayer::updateShader()
-{
-	startTimer(10);
+	renderer.setShaderProgram(shader.vertexShader, shader.fragmentShader, false);
+	renderer.setShaderProgram(shaderSky.vertexShader, shaderSky.fragmentShader, true);
 }
 
 void GroovPlayer::sliderValueChanged(Slider*)
@@ -202,13 +187,6 @@ void GroovPlayer::sliderValueChanged(Slider*)
 	renderer.wiggleSpeed = (float)wiggleSlider.getValue();
 	renderer.colorSat = (float)colorSatSlider.getValue();
 	renderer.colorVal = (float)colorValSlider.getValue();
-}
-
-void GroovPlayer::timerCallback()
-{
-	stopTimer();
-	renderer.setShaderProgram(vertexDocument.getAllContent(),
-		fragmentDocument.getAllContent());
 }
 
 void GroovPlayer::lookAndFeelChanged()

@@ -26,7 +26,13 @@ GroovRenderer::GroovRenderer()
 
 	setOpaque(true);
 	controlsOverlay.reset(new GroovPlayer(*this));
-	// addAndMakeVisible(controlsOverlay.get());
+
+	initPermTexture(&permTextureID);
+	initSimplexTexture(&simplexTextureID);
+	initGradTexture(&gradTextureID);
+
+	//textures.add(new Mesh::TextureFromAsset("background.png"));
+	//setTexture(textures[0]);
 
 	initOrbitals();
 
@@ -51,6 +57,8 @@ GroovRenderer::GroovRenderer()
 
 GroovRenderer::~GroovRenderer()
 {
+	delete(permPixels);
+	delete(gradPixels);
 	openGLContext.detach();
 }
 
@@ -61,7 +69,7 @@ void GroovRenderer::newOpenGLContextCreated()
 	freeAllContextObjects();
 
 	if (controlsOverlay.get() != nullptr)
-		controlsOverlay->updateShader();
+		controlsOverlay->loadShaders();
 }
 
 void GroovRenderer::openGLContextClosing()
@@ -100,27 +108,47 @@ void GroovRenderer::renderOpenGL()
 		if (!textureToUse->applyTo(texture))
 			textureToUse = nullptr;
 
-	updateShader();   // Check whether we need to compile a new shader
+	// Check whether we need to compile a new shader
+	updateShader();
+	updateSkyShader(); 
 
-	if (shader.get() == nullptr)
+	if ((shader.get() == nullptr) || (skyShader.get() == nullptr))
 		return;
 
-	// Having used the juce 2D renderer, it will have messed-up a whole load of GL state, so
-	// we need to initialise some important settings before doing our normal GL 3D drawing..
-	// C&A note: not sure if this is still necessary, since we're not in the demo runner.
+	// Enable depth tests
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	openGLContext.extensions.glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 
 	glViewport(0, 0, roundToInt(desktopScale * getWidth()), roundToInt(desktopScale * getHeight()));
 
-	texture.bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, permPixels);
+	glBindTexture(GL_TEXTURE_2D, permTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	openGLContext.extensions.glActiveTexture(GL_TEXTURE1);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, simplex4);
+	glBindTexture(GL_TEXTURE_1D, simplexTextureID);
+
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	openGLContext.extensions.glActiveTexture(GL_TEXTURE2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, gradPixels);
+	glBindTexture(GL_TEXTURE_2D, gradTextureID);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	openGLContext.extensions.glActiveTexture(GL_TEXTURE0);
+
+	// texture.bind();
+
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// Frame time calculations for BPM, etc.
 	_lastTime = _curTime;
@@ -141,14 +169,10 @@ void GroovRenderer::renderOpenGL()
 	// Convert from GLM to Juce data types.
 	Matrix3D<float> viewMatrix = g2jMat4(view);
 
-	// Get rotation values from draggableOrientation + rotate it more every frame
-	Matrix3D<float> rotationMatrix = draggableOrientation.getRotationMatrix();
-	auto rotationFrameMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
+	// Add our spastic rotation :)
+	auto rotationMatrix = Matrix3D<float>::rotation({ rotation, rotation, -0.3f });
 
-	// Combine rotations
-	Matrix3D<float> jRotMat = rotationFrameMatrix * rotationMatrix;
-
-	glm::mat4 rotMat = j2gMat4(jRotMat);
+	glm::mat4 rotMat = j2gMat4(rotationMatrix);
 
 	glm::mat4 beatRot = glm::toMat4(glm::angleAxis((float)looper, glm::vec3(0.0, 1.0, 0.0)));
 
@@ -175,6 +199,33 @@ void GroovRenderer::renderOpenGL()
 
 	glm::vec3 userColor = angleToRGB(glm::degrees(looper));
 
+	skyShader->use();
+
+	if (skyUniforms->modelMatrix.get() != nullptr)
+		skyUniforms->modelMatrix->setMatrix4(Matrix3D<float>().mat, 1, false);
+
+	if (skyUniforms->projectionMatrix.get() != nullptr)
+		skyUniforms->projectionMatrix->setMatrix4(projectionMatrix.mat, 1, false);
+
+	if (skyUniforms->viewMatrix.get() != nullptr)
+		skyUniforms->viewMatrix->setMatrix4(viewMatrix.mat, 1, false);
+
+	if (skyUniforms->permTexture.get() != nullptr)
+		skyUniforms->permTexture->set((GLint)0);
+
+	if (skyUniforms->simplexTexture.get() != nullptr)
+		skyUniforms->simplexTexture->set((GLint)1);
+
+	if (skyUniforms->gradTexture.get() != nullptr)
+		skyUniforms->gradTexture->set((GLint)2);
+
+	if (skyUniforms->looper.get() != nullptr)
+		skyUniforms->looper->set((float)looper);
+
+	glDepthMask(GL_FALSE);
+	skyCube->draw(openGLContext, *skyAttributes);
+	glDepthMask(GL_TRUE);
+
 	shader->use();
 
 	if (uniforms->modelMatrix.get() != nullptr)
@@ -189,8 +240,8 @@ void GroovRenderer::renderOpenGL()
 	if (uniforms->normalMatrix.get() != nullptr)
 		uniforms->normalMatrix->setMatrix3(normalMatrix, 1, false);
 
-	if (uniforms->texture.get() != nullptr)
-		uniforms->texture->set((GLint)0);
+	//if (uniforms->texture.get() != nullptr)
+	//	uniforms->texture->set((GLint)0);
 
 	if (uniforms->eyePosition.get() != nullptr)
 		uniforms->eyePosition->set(eye_world.x, eye_world.y, eye_world.z);
@@ -217,7 +268,6 @@ void GroovRenderer::renderOpenGL()
 	}
 	else {
 		looper += (glm::pi<double>() * (bpm / 60.0) * rdt);
-		
 	}
 
 	// Sinusoidal interpolation between 0 and 1 based on looper.
@@ -226,8 +276,6 @@ void GroovRenderer::renderOpenGL()
 		curveLooper = glm::pi<double>() * sin(looper / 2.0) / 2.0;
 	else
 		curveLooper = glm::pi<double>() * sin((looper - glm::pi<double>()) / 2.0) / 2.0;
-
-
 	// Scale it so it bounces every frame
 	if (doScaleBounce) {
 		loopingScale = (float)abs(cos(looper));
@@ -239,12 +287,30 @@ void GroovRenderer::renderOpenGL()
 
 	oModelMatrix = -rotMat * oModelMatrix;
 
-	glm::mat4 transMat;
 	// X-Orbitals
+	drawXOrbitals(oModelMatrix);
+
+	// Y-Orbitals
+	drawYOrbitals(oModelMatrix);
+
+	// Reset the element buffers so child Components draw correctly
+	openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
+	openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	rotation += (float)rotationSpeed;
+}
+
+void GroovRenderer::drawXOrbitals(glm::mat4 model)
+{
+	glm::mat4 transMat;
+	glm::mat3 normal_mat;
+	Matrix3D<float> modelMatrix;
+	float normalMatrix[9];
+
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
-		glm::mat4 baseModel = oModelMatrix;
+		glm::mat4 baseModel = model;
 		float wiggleDistance = (audioStopped) ? 1000.0f : GV_INV_WIGGLE_DISTANCE;
-		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>()/2.0)), cos(looper*wiggleSpeed)/ wiggleDistance, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
+		transMat = glm::translate(glm::mat4(1.0), glm::vec3(GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0)), cos(looper*wiggleSpeed) / wiggleDistance, GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0))));
 		baseModel = transMat * baseModel;
 
 		modelMatrix = g2jMat4(baseModel);
@@ -267,10 +333,17 @@ void GroovRenderer::renderOpenGL()
 
 		xOrbitals[i]->draw(openGLContext, *attributes);
 	}
+}
 
-	// Y-Orbitals
+void GroovRenderer::drawYOrbitals(glm::mat4 model)
+{
+	glm::mat4 transMat;
+	glm::mat3 normal_mat;
+	Matrix3D<float> modelMatrix;
+	float normalMatrix[9];
+
 	for (int i = 0; i < GV_NUM_ORBITALS; i++) {
-		glm::mat4 baseModel = oModelMatrix;
+		glm::mat4 baseModel = model;
 		float wiggleDistance = (audioStopped) ? 1000.0f : GV_INV_WIGGLE_DISTANCE;
 		transMat = glm::translate(glm::mat4(1.0), glm::vec3(cos(looper*wiggleSpeed) / wiggleDistance, GV_ORBITAL_DISTANCE * cos(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0)), GV_ORBITAL_DISTANCE * sin(curveLooper + (i*glm::pi<float>() / 2.0) + (glm::pi<float>() / 4.0))));
 		baseModel = transMat * baseModel;
@@ -295,13 +368,6 @@ void GroovRenderer::renderOpenGL()
 
 		xOrbitals[i]->draw(openGLContext, *attributes);
 	}
-
-	// Reset the element buffers so child Components draw correctly
-	openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
-	openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	if (!controlsOverlay->isMouseButtonDown())
-		rotation += (float)rotationSpeed;
 }
 
 Matrix3D<float> GroovRenderer::getProjectionMatrix() const
@@ -317,10 +383,16 @@ void GroovRenderer::setTexture(Mesh::Texture* t)
 	lastTexture = textureToUse = t;
 }
 
-void GroovRenderer::setShaderProgram(const String& vertexShader, const String& fragmentShader)
+void GroovRenderer::setShaderProgram(const String& vertexShader, const String& fragmentShader, bool isSkyShader)
 {
-	newVertexShader = vertexShader;
-	newFragmentShader = fragmentShader;
+	if (isSkyShader) {
+		newVertexSkyShader = vertexShader;
+		newFragmentSkyShader = fragmentShader;
+	}
+	else {
+		newVertexShader = vertexShader;
+		newFragmentShader = fragmentShader;
+	}
 }
 
 void GroovRenderer::paint(Graphics&) {}
@@ -331,7 +403,6 @@ void GroovRenderer::resized()
     // components that your component contains..
 
 	controlsOverlay->setBounds(getLocalBounds());
-	draggableOrientation.setViewport(getLocalBounds());
 }
 
 void GroovRenderer::handleAsyncUpdate()
@@ -369,6 +440,79 @@ void GroovRenderer::updateShader()
 
 		newVertexShader = {};
 		newFragmentShader = {};
+	}
+}
+
+void GroovRenderer::updateSkyShader()
+{
+	if (newVertexSkyShader.isNotEmpty() || newFragmentSkyShader.isNotEmpty()) 
+	{
+		std::unique_ptr<OpenGLShaderProgram> newSkyShader(new OpenGLShaderProgram(openGLContext));
+
+		if (newSkyShader->addVertexShader(OpenGLHelpers::translateVertexShaderToV3(newVertexSkyShader))
+			&& newSkyShader->addFragmentShader(OpenGLHelpers::translateFragmentShaderToV3(newFragmentSkyShader))
+			&& newSkyShader->link()) 
+		{
+			skyCube.reset();
+			skyAttributes.reset();
+			skyUniforms.reset();
+
+			skyShader.reset(newSkyShader.release());
+			skyShader->use();
+
+			skyCube.reset(new Mesh::Shape(openGLContext, "skyCube.obj"));
+			skyAttributes.reset(new Mesh::Attributes(openGLContext, *skyShader));
+			skyUniforms.reset(new Mesh::Uniforms(openGLContext, *skyShader));
+		}
+	
+		newVertexSkyShader = {};
+		newFragmentSkyShader = {};
+	}
+}
+
+// From Stefan Gustavson's code
+void GroovRenderer::initPermTexture(GLuint *texID)
+{
+	int i, j;
+
+	glGenTextures(1, texID);
+
+	permPixels = (char*)malloc(256 * 256 * 4); // we're creating a file manually!
+	for (i = 0; i < 256; i++) {
+		for (j = 0; j < 256; j++) {
+			int offset = (i * 256 + j) * 4;
+			char value = perm[(j + perm[i]) & 0xFF];
+			permPixels[offset] = grad3[value & 0x0F][0] * 64 + 64;			// Gradient x
+			permPixels[offset + 1] = grad3[value & 0x0F][1] * 64 + 64;		// Gradient y
+			permPixels[offset + 2] = grad3[value & 0x0F][2] * 64 + 64;		// Gradient z
+			permPixels[offset + 3] = value;									// Permuted index
+		}
+	}
+}
+
+// From Stefan Gustavson's code
+void GroovRenderer::initSimplexTexture(GLuint *texID)
+{
+	glGenTextures(1, texID);
+}
+
+// From Stefan Gustavson's code
+void GroovRenderer::initGradTexture(GLuint *texID)
+{
+	int i, j;
+
+	glGenTextures(1, texID);
+	
+	gradPixels = (char*)malloc(256 * 256 * 4);
+	for (i = 0; i < 256; i++) {
+		for (j = 0; j < 256; j++) {
+			int offset = (i * 256 + j) * 4;
+			char value = perm[(j + perm[i]) & 0xFF];
+			gradPixels[offset] = grad4[value & 0x1F][0] * 64 + 64;     // Gradient x
+			gradPixels[offset + 1] = grad4[value & 0x1F][1] * 64 + 64; // Gradient y
+			gradPixels[offset + 2] = grad4[value & 0x1F][2] * 64 + 64; // Gradient z
+			gradPixels[offset + 3] = grad4[value & 0x1F][3] * 64 + 64; // Gradient z
+		}
 	}
 }
 

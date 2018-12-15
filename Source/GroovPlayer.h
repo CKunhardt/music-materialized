@@ -21,8 +21,7 @@ class GroovRenderer;
 class GroovAudioApp;
 
 class GroovPlayer    :  public Component,
-						private Slider::Listener,
-						private Timer
+						private Slider::Listener
 {
 public:
     GroovPlayer(GroovRenderer& r);
@@ -74,10 +73,6 @@ public:
 
 	void loadShaders();
 
-	void selectTexture(int itemID);
-
-	void updateShader();
-
 	Label statusLabel;
 
 private:
@@ -85,7 +80,6 @@ private:
 
 	enum { shaderLinkDelay = 500 };
 
-	void timerCallback() override;
 	void lookAndFeelChanged() override;
 
 	void openButtonClicked();
@@ -115,8 +109,6 @@ private:
 		freeze{ "FREEZE!" };
 
 	TextButton openButton, playButton, stopButton;
-
-	OwnedArray<Mesh::Texture> textures;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroovPlayer)
 };
