@@ -168,6 +168,7 @@ static Shader getSkyShader()
 		"uniform sampler1D simplexTexture;\n"
 		"uniform sampler2D gradTexture;\n"
 		"uniform float looper;\n"
+		"uniform vec3 amounts;\n"
 	   #endif
 		"\n"
 		"#define ONE 0.00390625\n"
@@ -265,10 +266,13 @@ static Shader getSkyShader()
 		"{\n"
 	   #if JUCE_OPENGL_ES
 		"   highp float n = snoise(vec4(4.0 * worldPos.xyz, 0.5*looper));\n"
+		"   highp vec3 color = (0.5 + 0.5 * vec3(n,n,n))/4.0;\n"
 	   #else
-		"   float n = snoise(vec4(4.0 * worldPos.xyz, 0.5 * cos(looper)));\n"
+		"   float n = snoise(vec4(4.0 * worldPos.xyz, 0.5 * looper));\n"
+		"   vec3 color = (0.5 + 0.5 * vec3(n,n,n))/4.0;\n"
 	   #endif
-		"    gl_FragColor = vec4(0.5 + 0.5 * vec3(n,n,n), 1.0);\n"
+		"    color *= amounts;\n"
+		"    gl_FragColor = vec4(color.rgb, 1.0);\n"
 		"}\n"
 	};
 

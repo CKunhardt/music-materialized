@@ -50,7 +50,7 @@ public:
 	std::unique_ptr<GroovPlayer> controlsOverlay;
 
 	bool doScaleBounce = false;
-	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f, colorSat = 0.5f, colorVal = 1.0f;
+	float scale = 0.5f, rotationSpeed = 0.0f, wiggleSpeed = 4.0f, colorSat = 0.5f, colorVal = 1.0f, bgHue = 0.0f;
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
@@ -67,6 +67,7 @@ private:
 	float rotation = 0.0f;
 	float loopingScale = 1.0f;
 	double looper = 0.0;
+	double beatTime = 0.0;
 	double curveLooper = 0.0;
 	double bounceDistance = 1.0;
 	bool resetPeriod = false;
@@ -110,7 +111,7 @@ private:
 	void drawXOrbitals(glm::mat4 model);
 	void drawYOrbitals(glm::mat4 model);
 
-	glm::vec3 angleToRGB(double h);
+	glm::vec3 angleToRGB(double h, float sat, float val);
 
 	const int GV_NUM_ORBITALS = 4;
 	const float GV_ORBITAL_DISTANCE = 1.35;

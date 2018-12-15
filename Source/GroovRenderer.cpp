@@ -197,7 +197,8 @@ void GroovRenderer::renderOpenGL()
 		}
 	}
 
-	glm::vec3 userColor = angleToRGB(glm::degrees(looper));
+	glm::vec3 userColor = angleToRGB(glm::degrees(looper), colorSat, colorVal);
+	glm::vec3 bgColor = angleToRGB(bgHue, 0.75f, 1.0f); // TODO: add parameterized sat and val if desired
 
 	skyShader->use();
 
@@ -219,8 +220,11 @@ void GroovRenderer::renderOpenGL()
 	if (skyUniforms->gradTexture.get() != nullptr)
 		skyUniforms->gradTexture->set((GLint)2);
 
+	if (skyUniforms->amounts.get() != nullptr)
+		skyUniforms->amounts->set(bgColor.r, bgColor.g, bgColor.b);
+
 	if (skyUniforms->looper.get() != nullptr)
-		skyUniforms->looper->set((float)looper);
+		skyUniforms->looper->set((float)beatTime);
 
 	glDepthMask(GL_FALSE);
 	skyCube->draw(openGLContext, *skyAttributes);
@@ -259,15 +263,20 @@ void GroovRenderer::renderOpenGL()
 	// Set up an identity model matrix
 	glm::mat4 oModelMatrix = glm::mat4(1.0);
 
+	double toAdd = (glm::pi<double>() * (bpm / 60.0) * rdt);
+
 	if (looper > 2 * glm::pi<double>()) {
-		looper += (glm::pi<double>() * (bpm / 60.0) * rdt) - 2 * glm::pi<double>();
+		looper += (toAdd - 2 * glm::pi<double>());
+		beatTime += toAdd / 4.0;
 	}
 	else if (resetPeriod) {
-		looper = (glm::pi<double>() * (bpm / 60.0) * rdt);
+		looper = toAdd;
+		beatTime = toAdd;
 		resetPeriod = false;
 	}
 	else {
-		looper += (glm::pi<double>() * (bpm / 60.0) * rdt);
+		looper += toAdd;
+		beatTime += toAdd / 4.0;
 	}
 
 	// Sinusoidal interpolation between 0 and 1 based on looper.
@@ -538,7 +547,7 @@ void GroovRenderer::stopPlaying() {
 // Adapted from https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
 // Takes h in degrees, mind you! Make sure to convert with glm::radians();
 // colorVal and colorSat are parameterized controls. Maybe hue's range will be too, at some point? Not sure.
-glm::vec3 GroovRenderer::angleToRGB(double h) {
+glm::vec3 GroovRenderer::angleToRGB(double h, float sat, float val) {
 
 	// hh is a temporary value used for calculating hue in region. Final color is some combination of p, q, t, and colorVal.
 	double hh, p, q, t, ff;
@@ -547,8 +556,8 @@ glm::vec3 GroovRenderer::angleToRGB(double h) {
 	int i;
 	glm::vec3 color = glm::vec3();
 
-	if (colorSat <= 0.0f) {
-		color = glm::vec3(colorVal);
+	if (sat <= 0.0f) {
+		color = glm::vec3(val);
 		return color;
 	}
 
@@ -557,39 +566,39 @@ glm::vec3 GroovRenderer::angleToRGB(double h) {
 	hh /= 60.0;
 	i = (int)hh;
 	ff = hh - i;
-	p = colorVal * (1.0 - colorSat);
-	q = colorVal * (1.0 - (colorSat * ff));
-	t = colorVal * (1.0 - (colorSat * (1.0 - ff)));
+	p = val * (1.0 - sat);
+	q = val * (1.0 - (sat * ff));
+	t = val * (1.0 - (sat * (1.0 - ff)));
 
 	switch (i) {
 	case 0:
-		color.r = colorVal;
+		color.r = val;
 		color.g = t;
 		color.b = p;
 		break;
 	case 1:
 		color.r = q;
-		color.g = colorVal;
+		color.g = val;
 		color.b = p;
 		break;
 	case 2:
 		color.r = p;
-		color.g = colorVal;
+		color.g = val;
 		color.b = t;
 		break;
 	case 3:
 		color.r = p;
 		color.g = q;
-		color.b = colorVal;
+		color.b = val;
 		break;
 	case 4:
 		color.r = t;
 		color.g = p;
-		color.b = colorVal;
+		color.b = val;
 		break;
 	case 5:
 	default:
-		color.r = colorVal;
+		color.r = val;
 		color.g = p;
 		color.b = q;
 		break;

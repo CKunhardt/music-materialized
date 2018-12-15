@@ -100,13 +100,27 @@ public:
 			permTexture.reset(createUniform(openGLContext, shader, "permTexture"));
 			simplexTexture.reset(createUniform(openGLContext, shader, "simplexTexture"));
 			gradTexture.reset(createUniform(openGLContext, shader, "gradTexture"));
+			amounts.reset(createUniform(openGLContext, shader, "amounts"));
 			eyePosition.reset(createUniform(openGLContext, shader, "eyePosition"));
 			lightPosition.reset(createUniform(openGLContext, shader, "lightPosition"));
 			userColor.reset(createUniform(openGLContext, shader, "userColor"));
 			looper.reset(createUniform(openGLContext, shader, "looper"));
 		}
 
-		std::unique_ptr<OpenGLShaderProgram::Uniform> modelMatrix, projectionMatrix, viewMatrix, normalMatrix, texture, permTexture, simplexTexture, gradTexture, eyePosition, lightPosition, userColor, looper;
+		std::unique_ptr<OpenGLShaderProgram::Uniform> 
+			modelMatrix,
+			projectionMatrix,
+			viewMatrix,
+			normalMatrix,
+			texture,
+			permTexture,
+			simplexTexture,
+			gradTexture,
+			amounts,
+			eyePosition,
+			lightPosition,
+			userColor,
+			looper;
 
 	private:
 		static OpenGLShaderProgram::Uniform* createUniform(OpenGLContext& openGLContext,

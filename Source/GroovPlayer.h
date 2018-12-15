@@ -97,13 +97,15 @@ private:
 		wiggleLabel{ {}, "Wiggle: "},
 		colorSatLabel{ {}, "Saturation: "},
 		colorValLabel{ {}, "Brightness: "},
+		bgHueLabel{ {}, "Background Hue: "},
 		zoomLabel{ {}, "Zoom: " },
 		bpmLabel{ {}, "BPM: " };
 
 	CodeDocument vertexDocument, fragmentDocument;
 	
 	Slider speedSlider, sizeSlider, bpmSlider, 
-		wiggleSlider, colorSatSlider, colorValSlider;
+		wiggleSlider, colorSatSlider, colorValSlider,
+		bgHueSlider;
 
 	ToggleButton enableScaleBounce{ "Enable Bouncing" },
 		freeze{ "FREEZE!" };

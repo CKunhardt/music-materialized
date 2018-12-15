@@ -62,6 +62,13 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	addAndMakeVisible(colorValLabel);
 	colorValLabel.attachToComponent(&colorValSlider, true);
 
+	addAndMakeVisible(bgHueSlider);
+	bgHueSlider.setRange(0.0, 360.0, 1.0);
+	bgHueSlider.addListener(this);
+
+	addAndMakeVisible(bgHueLabel);
+	bgHueLabel.attachToComponent(&bgHueSlider, true);
+
 	addAndMakeVisible(bpmSlider);
 	bpmSlider.setRange(0, 250, 1);
 	bpmSlider.addListener(this);
@@ -116,6 +123,7 @@ void GroovPlayer::initialize()
 	wiggleSlider.setValue(4.0);
 	colorSatSlider.setValue(0.5);
 	colorValSlider.setValue(1.0);
+	bgHueSlider.setValue(180.0);
 
 	loadShaders();
 }
@@ -129,7 +137,7 @@ void GroovPlayer::resized()
 
 	auto area = getLocalBounds().reduced(4);
 
-	auto top = area.removeFromTop(200);
+	auto top = area.removeFromTop(225);
 
 	auto musicControls = top.removeFromLeft((area.getWidth() / 2) - 90);
 	musicControls = musicControls.removeFromTop(100);
@@ -140,6 +148,7 @@ void GroovPlayer::resized()
 	auto controls = top.removeFromRight(area.getWidth() / 2);
 	freeze.setBounds(controls.removeFromBottom(25));
 	enableScaleBounce.setBounds(controls.removeFromBottom(25));
+	bgHueSlider.setBounds(controls.removeFromBottom(25));
 	colorSatSlider.setBounds(controls.removeFromBottom(25));
 	colorValSlider.setBounds(controls.removeFromBottom(25));
 	wiggleSlider.setBounds(controls.removeFromBottom(25));
@@ -187,6 +196,7 @@ void GroovPlayer::sliderValueChanged(Slider*)
 	renderer.wiggleSpeed = (float)wiggleSlider.getValue();
 	renderer.colorSat = (float)colorSatSlider.getValue();
 	renderer.colorVal = (float)colorValSlider.getValue();
+	renderer.bgHue = (float)bgHueSlider.getValue();
 }
 
 void GroovPlayer::lookAndFeelChanged()
