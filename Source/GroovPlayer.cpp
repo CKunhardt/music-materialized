@@ -21,10 +21,6 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 {
 	audioApp.reset(new GroovAudioApp (*this));
 
-	addAndMakeVisible(statusLabel);
-	statusLabel.setJustificationType(Justification::topLeft);
-	statusLabel.setFont(Font(14.0f));
-
 	// SLIDERS -----------------------
 	addAndMakeVisible(sizeSlider);
 	sizeSlider.setRange(1.0, 3.0, 0.01);
@@ -104,6 +100,8 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	stopButton.setEnabled(false);
 
 	lookAndFeelChanged();
+
+	setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
 }
 
 GroovPlayer::~GroovPlayer()
@@ -137,28 +135,26 @@ void GroovPlayer::resized()
 
 	auto area = getLocalBounds().reduced(4);
 
-	auto top = area.removeFromTop(225);
+	auto top = area.removeFromTop(PLAYER_HEIGHT - PARAM_HEIGHT);
 
 	auto musicControls = top.removeFromLeft((area.getWidth() / 2) - 90);
-	musicControls = musicControls.removeFromTop(100);
-	stopButton.setBounds(musicControls.removeFromBottom(25));
-	playButton.setBounds(musicControls.removeFromBottom(25));
-	openButton.setBounds(musicControls.removeFromBottom(50));
+	musicControls = musicControls.removeFromTop(PARAM_HEIGHT * 4);
+	stopButton.setBounds(musicControls.removeFromBottom(PARAM_HEIGHT));
+	playButton.setBounds(musicControls.removeFromBottom(PARAM_HEIGHT));
+	openButton.setBounds(musicControls.removeFromBottom(PARAM_HEIGHT * 2));
 
 	auto controls = top.removeFromRight(area.getWidth() / 2);
-	freeze.setBounds(controls.removeFromBottom(25));
-	enableScaleBounce.setBounds(controls.removeFromBottom(25));
-	bgHueSlider.setBounds(controls.removeFromBottom(25));
-	colorSatSlider.setBounds(controls.removeFromBottom(25));
-	colorValSlider.setBounds(controls.removeFromBottom(25));
-	wiggleSlider.setBounds(controls.removeFromBottom(25));
-	bpmSlider.setBounds(controls.removeFromBottom(25));
-	speedSlider.setBounds(controls.removeFromBottom(25));
-	sizeSlider.setBounds(controls.removeFromBottom(25));
-	
+	freeze.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	enableScaleBounce.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bgHueSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	colorSatSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	colorValSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	wiggleSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bpmSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	speedSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	sizeSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 
 	top.removeFromRight(70);
-	statusLabel.setBounds(top);
 }
 
 void GroovPlayer::mouseDown(const MouseEvent& e)

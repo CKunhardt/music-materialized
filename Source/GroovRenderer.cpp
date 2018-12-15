@@ -202,7 +202,7 @@ void GroovRenderer::renderOpenGL()
 
 	// Hack to get the background cube to not scale with our scale parameter.
 	float tempScale = scale;
-	scale = 2.0f;
+	scale = 1.75f;
 	Matrix3D<float> bgProjMatrix = getProjectionMatrix();
 	scale = tempScale;
 
@@ -287,11 +287,11 @@ void GroovRenderer::renderOpenGL()
 	}
 
 	// Sinusoidal interpolation between 0 and 1 based on looper.
-
 	if (looper < (glm::pi<double>() ))/// 2.0))
 		curveLooper = glm::pi<double>() * sin(looper / 2.0) / 2.0;
 	else
 		curveLooper = glm::pi<double>() * sin((looper - glm::pi<double>()) / 2.0) / 2.0;
+
 	// Scale it so it bounces every frame
 	if (doScaleBounce) {
 		loopingScale = (float)abs(cos(looper));
@@ -417,13 +417,6 @@ void GroovRenderer::resized()
 {
     // This method is where you should set the bounds of any child
     // components that your component contains..
-
-	controlsOverlay->setBounds(getLocalBounds());
-}
-
-void GroovRenderer::handleAsyncUpdate()
-{
-	controlsOverlay->statusLabel.setText(statusText, dontSendNotification);
 }
 
 void GroovRenderer::updateShader()
@@ -451,8 +444,6 @@ void GroovRenderer::updateShader()
 			attributes.reset(new Mesh::Attributes(openGLContext, *shader));
 			uniforms.reset(new Mesh::Uniforms(openGLContext, *shader));
 		}
-
-		triggerAsyncUpdate();
 
 		newVertexShader = {};
 		newFragmentShader = {};

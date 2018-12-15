@@ -72,7 +72,7 @@ public:
 			setContentOwned(r->controlsOverlay.get(), true);
 			setResizable(true, true);
 
-			setSize(500, 500);
+			setSize(r->controlsOverlay->PLAYER_WIDTH, r->controlsOverlay->PLAYER_HEIGHT);
 
 			centreWithSize(getWidth(), getHeight());
 			setVisible(true);

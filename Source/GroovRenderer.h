@@ -23,8 +23,7 @@
 class GroovPlayer;
 
 class GroovRenderer    : public Component, 
-						 private OpenGLRenderer,
-						 private AsyncUpdater
+						 private OpenGLRenderer
 {
 public:
     GroovRenderer();
@@ -57,9 +56,7 @@ public:
 	void startPlaying();
 	void stopPlaying();
 
-private:
-	void handleAsyncUpdate() override;
-	
+private:	
 	void initOrbitals();
 
 	OpenGLContext openGLContext;

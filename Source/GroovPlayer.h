@@ -73,7 +73,8 @@ public:
 
 	void loadShaders();
 
-	Label statusLabel;
+	const int PLAYER_WIDTH = 600;
+	const int PLAYER_HEIGHT = 250;
 
 private:
 	void sliderValueChanged(Slider*) override;
@@ -111,6 +112,8 @@ private:
 		freeze{ "FREEZE!" };
 
 	TextButton openButton, playButton, stopButton;
+
+	const int PARAM_HEIGHT = 25;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroovPlayer)
 };
