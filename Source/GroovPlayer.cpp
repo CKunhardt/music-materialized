@@ -29,13 +29,20 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	addAndMakeVisible(zoomLabel);
 	zoomLabel.attachToComponent(&sizeSlider, true);
 
-	addAndMakeVisible(speedSlider);
-	speedSlider.setRange(0.0, 0.5, 0.001);
-	speedSlider.addListener(this);
-	speedSlider.setSkewFactor(0.5f);
+	addAndMakeVisible(spinSpeedSlider);
+	spinSpeedSlider.setRange(0.0, 0.5, 0.001);
+	spinSpeedSlider.addListener(this);
+	spinSpeedSlider.setSkewFactor(0.5f);
 
-	addAndMakeVisible(speedLabel);
-	speedLabel.attachToComponent(&speedSlider, true);
+	addAndMakeVisible(spinSpeedLabel);
+	spinSpeedLabel.attachToComponent(&spinSpeedSlider, true);
+
+	addAndMakeVisible(bgSpeedSlider);
+	bgSpeedSlider.setRange(0, 250, 1);
+	bgSpeedSlider.addListener(this);
+
+	addAndMakeVisible(bgSpeedLabel);
+	bgSpeedLabel.attachToComponent(&bgSpeedSlider, true);
 
 	addAndMakeVisible(wiggleSlider);
 	wiggleSlider.setRange(0.0, 10.0, 0.001);
@@ -51,12 +58,26 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 	addAndMakeVisible(colorSatLabel);
 	colorSatLabel.attachToComponent(&colorSatSlider, true);
 
+	addAndMakeVisible(bgSatSlider);
+	bgSatSlider.setRange(0.0, 1.0, 0.001);
+	bgSatSlider.addListener(this);
+
+	addAndMakeVisible(bgSatLabel);
+	bgSatLabel.attachToComponent(&bgSatSlider, true);
+
 	addAndMakeVisible(colorValSlider);
 	colorValSlider.setRange(0.0, 1.0, 0.001);
 	colorValSlider.addListener(this);
 
 	addAndMakeVisible(colorValLabel);
 	colorValLabel.attachToComponent(&colorValSlider, true);
+
+	addAndMakeVisible(bgValSlider);
+	bgValSlider.setRange(0.0, 1.0, 0.001);
+	bgValSlider.addListener(this);
+
+	addAndMakeVisible(bgValLabel);
+	bgValLabel.attachToComponent(&bgValSlider, true);
 
 	addAndMakeVisible(bgHueSlider);
 	bgHueSlider.setRange(0.0, 360.0, 1.0);
@@ -111,17 +132,20 @@ GroovPlayer::~GroovPlayer()
 
 void GroovPlayer::initialize()
 {
-	speedSlider.setValue(0.01);
-	sizeSlider.setValue(2.5);
-
-	bpmSlider.setValue(125);
 	lastBPM = 125;
 	frozen = false;
 
+	bpmSlider.setValue(125);
+	spinSpeedSlider.setValue(0.01);
+	sizeSlider.setValue(2.5);
 	wiggleSlider.setValue(4.0);
+	bgSpeedSlider.setValue(125);
+
 	colorSatSlider.setValue(0.5);
 	colorValSlider.setValue(1.0);
 	bgHueSlider.setValue(180.0);
+	bgSatSlider.setValue(0.75);
+	bgValSlider.setValue(1.0);
 
 	loadShaders();
 }
@@ -146,13 +170,16 @@ void GroovPlayer::resized()
 	auto controls = top.removeFromRight(area.getWidth() / 2);
 	freeze.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	enableScaleBounce.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bgSatSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bgValSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	bgHueSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bgSpeedSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	colorSatSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	colorValSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	wiggleSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
-	bpmSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
-	speedSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	spinSpeedSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 	sizeSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
+	bpmSlider.setBounds(controls.removeFromBottom(PARAM_HEIGHT));
 
 	top.removeFromRight(70);
 }
@@ -187,12 +214,15 @@ void GroovPlayer::loadShaders()
 void GroovPlayer::sliderValueChanged(Slider*)
 {
 	renderer.scale =  (float)sizeSlider.getValue();
-	renderer.rotationSpeed = (float)speedSlider.getValue();
+	renderer.rotationSpeed = (float)spinSpeedSlider.getValue();
 	renderer.bpm = (int)bpmSlider.getValue();
 	renderer.wiggleSpeed = (float)wiggleSlider.getValue();
 	renderer.colorSat = (float)colorSatSlider.getValue();
 	renderer.colorVal = (float)colorValSlider.getValue();
 	renderer.bgHue = (float)bgHueSlider.getValue();
+	renderer.bgSpeed = (int)bgSpeedSlider.getValue();
+	renderer.bgSat = (float)bgSatSlider.getValue();
+	renderer.bgVal = (float)bgValSlider.getValue();
 }
 
 void GroovPlayer::lookAndFeelChanged()

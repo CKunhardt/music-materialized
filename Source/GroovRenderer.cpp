@@ -198,7 +198,7 @@ void GroovRenderer::renderOpenGL()
 	}
 
 	glm::vec3 userColor = angleToRGB(glm::degrees(looper), colorSat, colorVal);
-	glm::vec3 bgColor = angleToRGB(bgHue, 0.75f, 1.0f); // TODO: add parameterized sat and val if desired
+	glm::vec3 bgColor = angleToRGB(bgHue, bgSat, bgVal);
 
 	// Hack to get the background cube to not scale with our scale parameter.
 	float tempScale = scale;
@@ -271,19 +271,20 @@ void GroovRenderer::renderOpenGL()
 	glm::mat4 oModelMatrix = glm::mat4(1.0);
 
 	double toAdd = (glm::pi<double>() * (bpm / 60.0) * rdt);
+	double bgToAdd = (glm::pi<double>() * (bgSpeed / 60.0) * rdt);
 
 	if (looper > 2 * glm::pi<double>()) {
 		looper += (toAdd - 2 * glm::pi<double>());
-		beatTime += toAdd / 4.0;
+		beatTime += bgToAdd / 4.0;
 	}
 	else if (resetPeriod) {
 		looper = toAdd;
-		beatTime = toAdd;
+		beatTime = bgToAdd;
 		resetPeriod = false;
 	}
 	else {
 		looper += toAdd;
-		beatTime += toAdd / 4.0;
+		beatTime += bgToAdd / 4.0;
 	}
 
 	// Sinusoidal interpolation between 0 and 1 based on looper.

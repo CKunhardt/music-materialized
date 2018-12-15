@@ -74,7 +74,7 @@ public:
 	void loadShaders();
 
 	const int PLAYER_WIDTH = 600;
-	const int PLAYER_HEIGHT = 250;
+	const int PLAYER_HEIGHT = 325;
 
 private:
 	void sliderValueChanged(Slider*) override;
@@ -94,24 +94,42 @@ private:
 	GroovRenderer& renderer;
 	std::unique_ptr<GroovAudioApp> audioApp;
 
-	Label speedLabel{ {}, "Speed: " },
-		wiggleLabel{ {}, "Wiggle: "},
-		colorSatLabel{ {}, "Saturation: "},
-		colorValLabel{ {}, "Brightness: "},
-		bgHueLabel{ {}, "Background Hue: "},
+	Label
+		spinSpeedLabel{ {}, "Speed: " },
+		wiggleLabel{ {}, "Wiggle: " },
+		colorSatLabel{ {}, "Saturation: " },
+		colorValLabel{ {}, "Brightness: " },
+		bgHueLabel{ {}, "BG Hue: " },
+		bgSatLabel{ {}, "BG Saturation" },
 		zoomLabel{ {}, "Zoom: " },
-		bpmLabel{ {}, "BPM: " };
+		bpmLabel{ {}, "BPM: " },
+		bgSpeedLabel{ {}, "BG Speed" },
+		bgValLabel{ {}, "BG Val" };
 
-	CodeDocument vertexDocument, fragmentDocument;
+	CodeDocument 
+		vertexDocument, 
+		fragmentDocument;
 	
-	Slider speedSlider, sizeSlider, bpmSlider, 
-		wiggleSlider, colorSatSlider, colorValSlider,
-		bgHueSlider;
+	Slider
+		spinSpeedSlider,
+		sizeSlider,
+		bpmSlider,
+		wiggleSlider,
+		colorSatSlider,
+		colorValSlider,
+		bgHueSlider,
+		bgSpeedSlider,
+		bgSatSlider,
+		bgValSlider;
 
-	ToggleButton enableScaleBounce{ "Enable Bouncing" },
+	ToggleButton 
+		enableScaleBounce{ "Enable Bouncing" },
 		freeze{ "FREEZE!" };
 
-	TextButton openButton, playButton, stopButton;
+	TextButton 
+		openButton, 
+		playButton, 
+		stopButton;
 
 	const int PARAM_HEIGHT = 25;
 

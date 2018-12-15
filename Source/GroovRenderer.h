@@ -53,6 +53,9 @@ public:
 
 	// If we change this, we have to change the initial value of initialBPM in private.
 	int bpm = 120;
+	int bgSpeed = 125;
+	float bgSat = 0.75;
+	float bgVal = 1.0;
 	void startPlaying();
 	void stopPlaying();
 
