@@ -200,13 +200,20 @@ void GroovRenderer::renderOpenGL()
 	glm::vec3 userColor = angleToRGB(glm::degrees(looper), colorSat, colorVal);
 	glm::vec3 bgColor = angleToRGB(bgHue, 0.75f, 1.0f); // TODO: add parameterized sat and val if desired
 
+	// Hack to get the background cube to not scale with our scale parameter.
+	float tempScale = scale;
+	scale = 2.0f;
+	Matrix3D<float> bgProjMatrix = getProjectionMatrix();
+	scale = tempScale;
+
+	// TODO: environment mapping onto the cubes?
 	skyShader->use();
 
 	if (skyUniforms->modelMatrix.get() != nullptr)
 		skyUniforms->modelMatrix->setMatrix4(Matrix3D<float>().mat, 1, false);
 
 	if (skyUniforms->projectionMatrix.get() != nullptr)
-		skyUniforms->projectionMatrix->setMatrix4(projectionMatrix.mat, 1, false);
+		skyUniforms->projectionMatrix->setMatrix4(bgProjMatrix.mat, 1, false);
 
 	if (skyUniforms->viewMatrix.get() != nullptr)
 		skyUniforms->viewMatrix->setMatrix4(viewMatrix.mat, 1, false);

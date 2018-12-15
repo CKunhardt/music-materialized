@@ -27,7 +27,7 @@ GroovPlayer::GroovPlayer(GroovRenderer& r) : renderer(r)
 
 	// SLIDERS -----------------------
 	addAndMakeVisible(sizeSlider);
-	sizeSlider.setRange(1.0, 4.0, 0.01);
+	sizeSlider.setRange(1.0, 3.0, 0.01);
 	sizeSlider.addListener(this);
 
 	addAndMakeVisible(zoomLabel);
